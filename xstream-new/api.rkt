@@ -5,16 +5,10 @@
 (provide (all-defined-out))
 
 
-; TODO: rename it to of
-; (define (constantB const inputB)
-;   (behavior const (map (λ (e) const) (changes inputB))))
+; TODO: rename it to never
+(define (zeroE) '())
 
-; TODO: rename it to naver
-; (define (zeroE)
-;   '()) ;; a stream that never fires
-
-
-;; is it better to return e or no-evt if event is empty?
+; is it better to return e or no-evt if event is empty?
 (define (mapE proc evt-stream)
   (map (λ (e) (if (empty-event? e) e (proc e))) evt-stream))
 
@@ -50,23 +44,23 @@
        (list-tail (reverse (foldl (λ (n lst) (cons (if (empty-event? n) (first lst) (- n (first lst))) lst))
                                   (list init) stream)) 1)))
 
+(define (filterRepeatsE evt-stream)
+  (letrec ([f (λ (evt rest)
+                (cond [(empty? rest) evt]
+                      [(equal? evt (first rest)) 'no-evt]
+                      [(not-empty-event? (first rest)) evt]
+                      [else (f evt (cdr rest))]))])
+    (for/list ([i (range 1 (add1 (length evt-stream)))])
+      (let ([lst (take evt-stream i)])
+        (if (empty-event? (last lst))
+            'no-evt
+            (f (last lst) (cdr (reverse lst))))))))
 
-;; send/receive
 (define (startsWith init-value evt-stream)
   (behavior init-value (for/list ([i (range (length evt-stream))])
                          (findf (λ (e) (not (empty-event? e)))
                                 (reverse (cons init-value (take evt-stream (add1 i))))))))
 
-; TODO: rename it to remember
+; ; TODO: rename it to remember
 ; (define (changes behaviorB)
 ;     (filterRepeatsE (behavior-changes behaviorB)))
-
-
-; this is an original operator!
-; (define (collectB init-val proc b1)
-;   (let ([b-init (proc init-val (behavior-init b1))])
-;          (letrec ([collect (λ (lst prev)
-;                        (if (empty? lst)
-;                            '()
-;                            (cons (proc (first lst) prev) (collect (rest lst) (proc (first lst) prev)))))])
-;            (behavior b-init (collect (behavior-changes b1) b-init)))))

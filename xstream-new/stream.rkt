@@ -15,6 +15,13 @@
 (define (not-empty-event? e)
   (not (eq? NOEVENT e)))
 
+; Behavior (MemoryStream)
+
+(struct behavior (init changes) #:transparent)
+
+(define (new-behavior constructor n)
+  (behavior (constructor) (for/list ([i n]) (constructor))))
+
 
 ; Helpers
 
