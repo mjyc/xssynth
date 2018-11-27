@@ -96,6 +96,8 @@
   )
 
 
+; (define prog
+;   (program 0 (list (mapTo 1 '(no-evt no-evt no-evt click)))))
 (define prog
-  (program 0 (list (mapTo 1 '(no-evt no-evt no-evt click)))))
+  (program 0 (list (merge '(no-evt no-evt hello click) '(no-evt no-evt no-evt click)))))
 (interpret prog '())
