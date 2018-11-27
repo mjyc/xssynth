@@ -1,7 +1,7 @@
 #lang rosette
 (require rackunit)
-(require "fjapi.rkt")
-(require "model.rkt")
+(require "api.rkt")
+(require "stream.rkt")
 
 (define standard-evt-stream (list (list 1 11) (list 2 '12) (list 3 13)))
 (define empty-evt-stream '())

@@ -1,7 +1,7 @@
 #lang rosette
 (provide (all-defined-out))
 
-(require "model.rkt")
+(require "stream.rkt")
 
 ;;;;;;;;; operator wishlist ;;;;;;
 ;;
@@ -17,12 +17,12 @@
 ;; S -> R | S R
 ;; R -> E | B
 ;; E -> identityE | onceE | zeroE | mapE Pred E E | mergeE E E
-;;       | filterE Pred E | ifE E E E | constantE const E | collectE int Pred E 
+;;       | filterE Pred E | ifE E E E | constantE const E | collectE int Pred E
 ;;       | filterRepeatsE E | snapshotE E B | delayE const E | timerE const E
-;;       | changes B | BoolE 
-;; BoolE -> andE BoolE BoolE | orE BoolE BoolE | notE BoolE 
+;;       | changes B | BoolE
+;; BoolE -> andE BoolE BoolE | orE BoolE BoolE | notE BoolE
 ;; B -> startsWith const E | constantB const B | delayB const B | andB B B | orB B B
-;;       | notB B | liftB Pred B | ifB B B B | timerB const B 
+;;       | notB B | liftB Pred B | ifB B B B | timerB const B
 
 ;;;;; flapjax API ;;;;;
 

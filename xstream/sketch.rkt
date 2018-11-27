@@ -1,8 +1,8 @@
 #lang rosette
 
-(require "model.rkt")
-(require "operators.rkt")
-(require "specifications.rkt")
+(require "stream.rkt")
+(require "operator.rkt")
+(require "specification.rkt")
 
 (provide (all-defined-out))
 

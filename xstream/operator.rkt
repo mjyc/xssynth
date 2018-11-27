@@ -1,12 +1,12 @@
 #lang rosette
 
-(require "model.rkt")
-(require "fjapi.rkt")
-(require "specifications.rkt")
+(require "stream.rkt")
+(require "api.rkt")
+(require "specification.rkt")
 
 (provide (all-defined-out))
 
-(struct stream-insn 
+(struct stream-insn
   (op-index arg-index1 arg-index2 arg-index3 option-index arg-int arg-int2) #:transparent)
 
 (define (get-insn-holes)
@@ -116,11 +116,11 @@
                                         (format (list-ref inttoboolsfuncs-twoconst-string (stream-insn-option-index insn))
                                                 (get-integer-arg insn) (get-integer-arg2 insn))
                                         (get-input-stream insn past-vars)))))
-            
+
 #;(define liftB2-op
   (operator "liftB2"
             (λ (insn past-vars) (liftB2 (list-ref function-2arg-list (stream-insn-arg-index2 insn))
-                                        (list-ref past-vars (stream-insn-arg-index3 insn)) 
+                                        (list-ref past-vars (stream-insn-arg-index3 insn))
                                         (get-input-stream insn past-vars)))
             (λ (insn past-vars) (format "~a ~a ~a" (list-ref function-2arg-list-string (stream-insn-arg-index2 insn))
                                         (list-ref past-vars (stream-insn-arg-index3 insn))
