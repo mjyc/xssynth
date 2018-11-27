@@ -4,15 +4,14 @@
          rosette/lib/match)   ; provides `match`
 
 
+;; ----------------
 ;; Syntax
 
 (struct instruction () #:transparent)
 (struct unary instruction (r1) #:transparent)          ; unary instruction
 (struct binary instruction (r1 r2) #:transparent)      ; binary instruction
 (struct ternary instruction (r1 r2 r3) #:transparent)  ; ternary instruction
-
 (struct program (inputs instructions) #:transparent)
-
 
 ; Factories
 (struct merge binary () #:transparent)
@@ -21,11 +20,9 @@
 (struct mapTo binary () #:transparent)
 
 
-(define prog
-  (program 0 (list (mapTo 1 '(no-evt no-evt no-evt click)))))
 
+;; Shorthands for instruction accessors
 
-; ------------ shorthands for instruction accessors ------------ ;
 (define (r1 v)
   (match v
     [(unary f) f]
@@ -39,8 +36,7 @@
 
 (define r3 ternary-r3)
 
-; Returns true iff the given register is
-; read by any of the given instructions.
+; Returns true iff the given register is read by any of the given instructions
 (define (used? reg insts)
   (ormap
    (lambda (inst)
@@ -50,11 +46,12 @@
        [(ternary r1 r2 r3) (or (= r1 reg) (= r2 reg) (= r3 reg))]))
    insts))
 
-(define pr1 (list-ref (program-instructions prog) 0))
-(printf "(binary-r1 pr1) ~a~%" (binary-r1 pr1))
-(printf "(binary-r2 pr1) ~a~%" (binary-r2 pr1))
 
 
+;; ----------------
+;; Semantics
+
+;; Stream
 
 (define NOEVENT 'no-evt)
 
@@ -65,14 +62,13 @@
   (not (eq? NOEVENT e)))
 
 (define (constantE const evt-stream)
-  (map (λ (x) (if (empty-event? x) 'no-evt const)) evt-stream))
+  (map (lambda (x) (if (empty-event? x) 'no-evt const)) evt-stream))
 
-; (program-inputs prog)
+(define (mergeE evt-stream1 evt-stream2)
+  (map (lambda (evt1 evt2) (if (empty-event? evt2) evt1 evt2))
+       evt-stream1 evt-stream2))
 
-
-
-; Semantics
-
+; The interpreter
 (define (interpret prog inputs)
   (unless (= (program-inputs prog) (length inputs))
     (error 'interpret "expected ~a inputs, given ~a" (program-inputs prog) inputs))
@@ -94,9 +90,12 @@
     (printf "inst ~a~%" inst)
     (match inst
       [(mapTo r1 r2) (store idx (constantE r1 r2))]
+      [(merge r1 r2) (store idx (mergeE r1 r2))]
       ))
   (load (- size 1))
   )
 
 
+(define prog
+  (program 0 (list (mapTo 1 '(no-evt no-evt no-evt click)))))
 (interpret prog '())
