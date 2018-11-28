@@ -49,31 +49,6 @@
 (struct remember unary () #:transparent)
 
 
-; Helpers
-
-; shortcuts for instruction accessors
-(define (r1 v)
-  (match v
-    [(unary f) f]
-    [(binary f _) f]
-    [(ternary f _ _) f]))
-(define (r2 v)
-  (match v
-    [(binary _ f) f]
-    [(ternary _ f _) f]))
-(define r3 ternary-r3)
-
-; returns true iff the given register is read by any of the given instructions
-(define (used? reg insts)
-  (ormap
-   (lambda (inst)
-     (match inst
-       [(unary r1) (= r1 reg)]
-       [(binary r1 r2) (or (= r1 reg) (= r2 reg))]
-       [(ternary r1 r2 r3) (or (= r1 reg) (= r2 reg) (= r3 reg))]))
-   insts))
-
-
 
 ;; ----------------
 ;; Semantics
