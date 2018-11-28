@@ -12,23 +12,24 @@
 ;   * https://github.com/staltz/xstream
 
 
-; Stream as a list of events over discrete timesteps
+; Stream as list of events over discrete timesteps
 
 (struct empty-event () #:transparent)
 
 ; simplified version of xstream's Stream
-;   * events is a list, e.g., '(1 (empty-event) 2 ...)
+;   * events is the list representing events over discrete timesteps,
+;     e.g., '(1 (empty-event) 2 ...)
 ;   * https://github.com/staltz/xstream#stream
 (struct stream (events) #:transparent)
 
 ; simplified version of xstream's MemoryStream
-;   * init is a memory(-stream)'s initial value of and values is a list
-;     representing memory(-stream)'s current values
+;   * init is the memory(-stream)'s initial value of and values is the list
+;     representing memory(-stream)'s current values over discrete timesteps
 ;   * https://github.com/staltz/xstream#memorystream
 (struct memory (values [init #:auto]) #:transparent #:auto-value (empty-event))
 
 
-; Instruction as a register definition
+; Instruction as register definition
 
 (struct instruction () #:transparent)
 (struct unary instruction (r1) #:transparent)          ; unary instruction
@@ -47,6 +48,12 @@
 (struct mapTo binary () #:transparent)
 (struct fold ternary () #:transparent)
 (struct remember unary () #:transparent)
+
+
+; Program as list of instructions
+
+; inputs is the number of the program inputs
+(struct program (inputs instructions) #:transparent)
 
 
 
