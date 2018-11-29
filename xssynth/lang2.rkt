@@ -9,11 +9,11 @@
 
 (struct constant (value) #:transparent)
 
-(struct emptyevent () #:transparent)
+(struct empty-event () #:transparent)
 
 (struct $ () #:transparent)
 (struct stream $ (events) #:transparent)
-(struct memory $ (values [init #:auto]) #:transparent #:auto-value (emptyevent))
+(struct memory $ (values [init #:auto]) #:transparent #:auto-value (empty-event))
 
 
 (struct factory () #:transparent)
@@ -22,46 +22,51 @@
 (struct xsmerge binfactory (arg1 arg2))
 
 
-(struct operator () #:transparent)
-(struct unoperator operator (arg1 arg$) #:transparent)
-(struct binoperator operator (arg1 arg2 arg$) #:transparent)
+(struct operator (arg$) #:transparent)
+(struct unoperator operator (arg1) #:transparent)
+(struct binoperator operator (arg1 arg2) #:transparent)
 
-(struct xsmap unfactory (arg1 arg$))
-(struct xsmapTo unfactory (arg1 arg$))
-(struct xsstartWith unfactory (arg1 arg$))
-(struct xsfold unfactory (arg1 arg$))
-(struct xsremember unfactory (arg1 arg$))
+(struct xsmap binfactory (arg1))
+(struct xsmapTo unoperator (arg1))
+(struct xsstartWith unoperator (arg1))
+(struct xsfold binoperator (arg1 arg2))
+(struct xsremember factory ())
 
 
 (struct instruction () #:transparent)  ; list of factories & operators
 
 
-(struct program (numinputs instructions) #:transparent)
+(struct program (num-inputs instructions) #:transparent)
 
 
 
-; (define (straightline-graph inc dec)
-;   (define r1 inc)
-;   (define r2 dec)
-;   (define r3 (constantE 1 r1))
-;   (define r4 (constantE -1 r2))
-;   (define r5 (mergeE r3 r4))
-;   (define r6 (collectE 0 + r5))
-;   (define r7 (startsWith 0 r6))
-;   r7)
-
-; r3 (xsmapTo 1 (register 1))
-; r4 (xsmapTo -1 (register 2))
-; r5 (xsmerge (register 3) (register 4))
-; r6 (fold (lambda (acc x) (+ acc x)) 0 r4)
-; r6
 
 
 
-(define (interpconstant c)
-  (unless (or (constant? c) (constant? c))
-    (error 'interpconstant "invalid input ~a" c))
+
+; ---------
+; Semantics
+; ---------
+
+(define (constant-interp c)
   (constant-value c))
+
+(define ($-interp s)
+  s)
+
+; (define (facotry-interp fact)
+;   (match fact
+;     [(xsmerge arg1 arg2)
+;      (arg1)]))  ; implement it here
+
+; (define (operator-interp op)
+;   (match op
+;     [(xsmap arg$ arg1)]
+;     [(xsmapTo arg$ arg1)]
+;     [(xsstartWith arg$ arg1)]
+;     [(xsfold arg$ arg2)]
+;     [(xsremember arg$)]
+;     ))
 
 ; (match inst
 ;   [(xsmapTo . .) (store ((interpret )))]
@@ -76,9 +81,7 @@
 ; ...
 
 
-; ---------
-; Semantics
-; ---------
+
 
 
 ; (define (interpret prog inputs)
