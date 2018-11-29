@@ -60,6 +60,15 @@
 ;; ----------------
 ;; Semantics
 
+; (define (interpret-operator operator)
+;   (match operator
+;     [xsmerge]
+;     ))
+
+; (interpret-operator (xsmerge stream1))
+
+(define interpret-operator )
+
 (define (interpret-xsmerge r1 r2)
   (define r1-events (if (memory? r1) (memory-values r1) (stream-events r1)))
   (define r2-events (if (memory? r2) (memory-values r2) (stream-events r2)))
@@ -99,32 +108,32 @@
 ;   (map (lambda (evt1 evt2) (if (empty-event? evt2) evt1 evt2))
 ;        evt-stream1 evt-stream2))
 
-; ; The interpreter
-; (define (interpret prog inputs)
-;   (unless (= (program-inputs prog) (length inputs))
-;     (error 'interpret "expected ~a inputs, given ~a" (program-inputs prog) inputs))
-;   (define insts (program-instructions prog))
-;   (define size (+ (length inputs) (length insts)))
-;   (define reg (make-vector size))
-;   (define (store i v) (vector-set! reg i v))
+; The interpreter
+(define (interpret prog inputs)
+  (unless (= (program-inputs prog) (length inputs))
+    (error 'interpret "expected ~a inputs, given ~a" (program-inputs prog) inputs))
+  (define insts (program-instructions prog))
+  (define size (+ (length inputs) (length insts)))
+  (define reg (make-vector size))
+  (define (store i v) (vector-set! reg i v))
 
-;   (define (load i)
-;     (printf "reg ~a~%" reg)
-;     (vector-ref reg i))
+  (define (load i)
+    (printf "reg ~a~%" reg)
+    (vector-ref reg i))
 
-;   (printf "before reg ~a~%" reg)
-;   (for ([(in i) (in-indexed inputs)])
-;     (store i in))
-;   (printf "init reg ~a~%" reg)
+  (printf "before reg ~a~%" reg)
+  (for ([(in i) (in-indexed inputs)])
+    (store i in))
+  (printf "init reg ~a~%" reg)
 
-;   (for ([inst insts] [idx (in-range (length inputs) (vector-length reg))])
-;     (printf "inst ~a~%" inst)
-;     (match inst
-;       [(mapTo r1 r2) (store idx (constantE r1 r2))]
-;       [(merge r1 r2) (store idx (mergeE r1 r2))]
-;       ))
-;   (load (- size 1))
-;   )
+  (for ([inst insts] [idx (in-range (length inputs) (vector-length reg))])
+    (printf "inst ~a~%" inst)
+    (match inst
+      [(mapTo r1 r2) (store idx (constantE r1 r2))]
+      [(merge r1 r2) (store idx (mergeE r1 r2))]
+      ))
+  (load (- size 1))
+  )
 
 
 ; ; (define prog
