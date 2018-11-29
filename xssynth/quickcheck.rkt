@@ -12,17 +12,17 @@
 (define test
     (property ([lst (arbitrary-list arbitrary-integer)])
       (displayln lst)
-      true))
+      #t))
 
 (define test2
     (property ([lst (arbitrary-list (arbitrary (choose-mixed (list (delay (choose-integer 1 10)) (delay (choose-integer 20 30))) ) (lambda (x gen) gen)))])
       (displayln lst)
-      true))
+      #t))
 
 (define test3
     (property ([lst (arbitrary-list (arbitrary-mixed (list   (cons '() arbitrary-integer)   (cons '() arbitrary-boolean)   )))])
       (displayln lst)
-      true))
+      #t))
 
 
 (struct empty-event () #:transparent)
@@ -35,21 +35,33 @@
              (lambda (x gen) gen)
              ))
 
-(define arbitrary-stream
-  (arbitrary-list
+; (define arbitrary-integer-boolean-empty-event
+;     (arbitrary-mixed (list (cons '() arbitrary-integer)
+;                            (cons '() arbitrary-boolean)
+;                            (cons '() arbitrary-empty-event)
+;                            )))
+
+(define arbitrary-integer-boolean-empty-event
     (arbitrary-mixed (list (cons '() arbitrary-integer)
                            (cons '() arbitrary-boolean)
                            (cons '() arbitrary-empty-event)
-                           ))))
+                           )))
 
-; (define test4
-;     (property ([lst arbitrary-stream])
-;       (displayln lst)
-;       true))
+(define (arbitrary-streams n)
+  (arbitrary-list
+    (apply arbitrary-tuple
+      (build-list n (lambda (x) arbitrary-integer-boolean-empty-event)))))
+  ; (arbitrary-list (arbitrary-tuple arbitrary-integer-boolean-empty-event
+  ;                                  arbitrary-integer-boolean-empty-event)))
 
-; (quickcheck test4)
+(define test4
+    (property ([lst (arbitrary-streams 3)])
+      (define a (for/list ([i (range 3)])
+        (map (lambda (x) (list-ref x i)) lst)))
+      (printf "~a~%~%" a)
+      ; generate a function that ...
+      ; (printf "1: ~a~%2: ~a~%~%" (map car lst) (map (lambda (x) (list-ref x 1)) lst))
+      #t))
 
-
-
-
+(quickcheck test4)
 
