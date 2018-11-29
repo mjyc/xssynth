@@ -25,4 +25,31 @@
       true))
 
 
-(quickcheck test3)
+(struct empty-event () #:transparent)
+
+(define generator-empty-event
+  (generator (lambda (i rgen) (empty-event))))
+
+(define arbitrary-empty-event
+  (arbitrary generator-empty-event
+             (lambda (x gen) gen)
+             ))
+
+(define arbitrary-stream
+  (arbitrary-list
+    (arbitrary-mixed (list (cons '() arbitrary-integer)
+                           (cons '() arbitrary-boolean)
+                           (cons '() arbitrary-empty-event)
+                           ))))
+
+; (define test4
+;     (property ([lst arbitrary-stream])
+;       (displayln lst)
+;       true))
+
+; (quickcheck test4)
+
+
+
+
+

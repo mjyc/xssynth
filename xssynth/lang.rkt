@@ -1,7 +1,6 @@
 #lang rosette
 
-(require rosette/lib/angelic  ; provides `choose*`
-         rosette/lib/match)   ; provides `match`
+(require rosette/lib/angelic rosette/lib/match)
 
 (provide (all-defined-out))
 
