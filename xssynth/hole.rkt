@@ -21,7 +21,7 @@
       (constructor)
       empty)))  ; empty-event
 
-(define (??r lookup)
+(define (??r)
   (define-symbolic* si integer?)
   (r si))
 
@@ -30,35 +30,18 @@
     (xsmerge ??r ??r)))
 
 (define (??unoperator)
-  (xsmapTo ??r ??constant))
-  ; (choose*
-  ;   (xsmapTo ??r ??constant)))
+  (choose*
+    (xsmapTo (??r) (??constant))))
 
-(define (??instruction regs)
-  ; (choose* (??binfactory) (??unoperator)))
-  (??unoperator))
-
-; (define (??program inputs numinsts)
-;   (define size (+ (length inputs) numinsts))
-;   (define reg (make-vector size))
-;   (define (store i v) (vector-set! reg i v))
-;   (define (load i) (vector-ref reg i))
-;   (for ([(input i) (in-indexed inputs)])
-;     (store i input))
-
-;   (for ([i (in-range (length inputs) (vector-length reg))])
-;     (define defined-reg (vector-take reg (add1 i)))
-;     (store i (??instruction defined-reg)))
-
-;   (load (sub1 size))
-;   )
+(define (??instruction)
+  (choose* (??binfactory) (??unoperator)))
 
 (define (??program numinputs numinsts)
   (program
     numinputs
-    (for/list ([i numinsts]) ??instruction)
-    )
-  )
+    (for/list ([i numinsts]) (??instruction))
+    ))
+
 
 ; Example
 
@@ -88,6 +71,11 @@
   (list
     (list 0 0 0 0)
     ))
+
+; (solve
+;   (assert (equal?
+;     (??r)
+;     (r 10))))
 
 (solve
   (assert (equal?
