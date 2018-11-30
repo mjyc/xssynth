@@ -35,27 +35,27 @@
 ; ------------------------------------------------------------------------------
 ; Tests
 
-(define (test-constant-interp)
-  (test-case "test-constant-interp"
+(define (test-constant-interpret)
+  (test-case "test-constant-interpret"
     (check-property
       (property ([int-or-bool arbitrary-integer-or-boolean])
         (define c (constant int-or-bool))
-        (eqv? (constant-interp c)
+        (eqv? (constant-interpret c)
               int-or-bool)))
   ))
 
-(define (test-constant-$)
-  (test-case "test-constant-$"
+(define (test-$-interpret)
+  (test-case "test-$-interpret"
     (check-property
       (property ([events (arbitrary-tuple-events)])
         (define s (stream events))
-        (equal? ($-interp s) s)))
+        (equal? ($-interpret s) s)))
   ))
 
 
 (define/provide-test-suite lang2-tests
-  (test-constant-interp)
-  (test-constant-$)
+  (test-constant-interpret)
+  (test-$-interpret)
   )
 
 (run-tests lang2-tests)

@@ -1,4 +1,4 @@
-#lang racket/base
+#lang racket
 
 (provide (all-defined-out))
 
@@ -13,26 +13,25 @@
 
 (struct $ () #:transparent)
 (struct stream $ (events) #:transparent)
-; (struct memory $ (values [init #:auto]) #:transparent #:auto-value (empty-event))
 
 
 (struct factory () #:transparent)
 (struct binfactory factory (arg1 arg2) #:transparent)
 
-(struct xsmerge binfactory (arg1 arg2))
+(struct xsmerge binfactory () #:transparent)
 
 
 (struct operator (arg$) #:transparent)
 (struct unoperator operator (arg1) #:transparent)
 (struct binoperator operator (arg1 arg2) #:transparent)
 
-(struct xsmap binfactory (arg1))
-(struct xsmapTo unoperator (arg1))
-(struct xsstartWith unoperator (arg1))
-(struct xsfold binoperator (arg1 arg2))
-; (struct xsremember factory ())
+(struct xsmap binfactory () #:transparent)
+(struct xsmapTo unoperator () #:transparent)
+(struct xsstartWith unoperator () #:transparent)
+(struct xsfold binoperator () #:transparent)
 
 
+(struct register (index) #:transparent)
 (struct instruction () #:transparent)  ; list of factories & operators
 
 
@@ -48,86 +47,42 @@
 ; Semantics
 ; ---------
 
-(define (constant-interp c)
-  (constant-value c))
+(define (constant-interpret c)
+  (constant-value c))  ; boolean or integer for now
 
-(define ($-interp s)
-  (stream-events s))
+(define ($-interpret s)
+  s)  ; just stream for now
 
-(define (register-interp reg lookup)
-  (define idx (register-idx reg))
-  (if (>= idx (length lookup))
-    (error 'register-interp "invalid input" reg))
-  (list-ref lookup idx))
+(define (register-interpret reg lookup)
+  (define idx (register-index reg))
+  (unless (< idx (vector-length lookup))
+    (error 'register-interpret "invalid input" reg))
+  (vector-ref lookup idx))
 
-(define (facotry-interp fact reg lookup)
+(define (factory-interpret fact lookup)
   (match fact
     [(xsmerge arg1 arg2)
      (map (lambda (event1 event2) (if (empty-event? event2) event1 event2))
-          (register-interp arg1 lookup) (register-interp arg2 lookup))]))
+          (stream-events (register-interpret arg1 lookup))
+          (stream-events (register-interpret arg2 lookup)))]
+    ; TODO: add more factory-interpreters here
+    ))
 
-(define (operator-interp op)
+(define (operator-interpret op lookup)
   (match op
-    [(xsmapTo arg$ arg2)
-     (lambda (x) (if (empty-event? x) (empty-event) (constant-interp arg2)))]
-    []))
+    [(xsmapTo arg1 arg2)
+     (map (lambda (x) (if (empty-event? x) (empty-event) (constant-interpret arg2)))
+          (register-interpret arg1 lookup))]
+    ; TODO: add more operator-interpreters here
+    ))
 
-
-(define (instruction-interp) inst
+(define (instruction-interpret) inst lookup
   (match inst
-    [(factory _) (facotry-interp inst lookup)]
-    [(operator _) (facotry-interp inst lookup)]))
+    [(factory _) (facotry-interpret inst lookup)]
+    [(operator _) (operator-interpret inst lookup)]))
 
-(define (interpret prog)
-  (define lookup '()) ; add inputs
-  (define insts (program-instructions prog))
+; (instruction-interpret (xsmapTo (register 0) (constant 1)  ))
 
-  ; loop it and store it one by one
-  ; for
-  ; ( (instruction-interp)
-
-  )
-
-     ; (stream (map (lambda (event1 event2) (if (empty-event? event2) event1 event2))
-     ;   r1-events r2-events))
-
-     ; (map (lambda (event1 event2) (if (empty-event? event2) event1 event2))
-     ;      (register-interp arg1 lookup) (register-interp arg2 lookup))]))
-
-
-; (define (operator-interp op)
-;   (match op
-;     [(xsmap arg$ arg1)]
-;     [(xsmapTo arg$ arg1)]
-;     [(xsstartWith arg$ arg1)]
-;     [(xsfold arg$ arg2)]
-;     [(xsremember arg$)]
-;     ))
-
-; (match inst
-;   [(xsmapTo . .) (store ((interpret )))]
-;   [(xsmapTo . .) ()]
-;   [(xsmapTo . .) ()]
-;   [(xsmapTo . .) ()]
-;   [(constant v) (load i)]
-;   [(lookup i) (load i)]
-;   )
-
-; then what? at this point?; implement interpreter, ...,
-; ...
-
-
-
-
-
-; (define (interpret prog inputs)
-
-;   1. extract inputs
-;   2. create registers should be done on
-
-;   (match inst
-;     ; [(binfactory arg1 arg2) (store idx (constantE r1 r2))]
-;     [(binfactory arg1 arg2) (store idx (constantE r1 r2))]
-
-;     ))
-;   )
+; (define (interpret prog)
+;   (define lookup '()) ; add inputs
+;   (define insts (program-instructions prog)))
