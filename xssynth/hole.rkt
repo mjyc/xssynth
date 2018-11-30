@@ -9,10 +9,8 @@
 
 (define (??constant)
   (define-symbolic* si integer?)
-  si)
-  ; (define-symbolic* si integer?)
-  ; (define-symbolic* sb boolean?)
-  ; (choose* si sb))
+  (define-symbolic* sb boolean?)
+  (choose* si sb))
 
 (define (??stream constructor size)
   (define-symbolic* sb boolean?)
@@ -27,7 +25,7 @@
 
 (define (??binfactory)
   (choose*
-    (xsmerge ??r ??r)))
+    (xsmerge (??r) (??r))))
 
 (define (??unoperator)
   (choose*
@@ -36,6 +34,7 @@
 (define (??instruction)
   (choose* (??binfactory) (??unoperator)))
 
+; TODO: update it to ??instructions
 (define (??program numinputs numinsts)
   (program
     numinputs
@@ -50,8 +49,8 @@
     2
     (list
       (xsmapTo (r 0) 1)
-      ; (xsmapTo (r 1) -1)
-      ; (xsmerge (r 2) (r 3))
+      (xsmapTo (r 1) -1)
+      (xsmerge (r 2) (r 3))
       )))
 
 (define inputs
@@ -60,32 +59,32 @@
     (list empty 'click empty 'click)
     ))
 
-(program-interpret spec inputs)
+; (program-interpret spec inputs)
 
 
-(define ??inputs
-  (list ??stream ??stream))
+(define (??inputs constructor size n)
+  (build-list n (lambda (x) (??stream constructor size))))
 
 
-(define test-input
-  (list
-    (list 0 0 0 0)
-    ))
+(program-interpret (program 2 (list
+  (xsmapTo (r 0) 1)
+  (xsmapTo (r 1) 1)
+  (xsmerge (r 2) (r 3))
+  )) inputs)
 
-; (solve
-;   (assert (equal?
-;     (??r)
-;     (r 10))))
 
-(solve
-  (assert (equal?
-    (program-interpret (??program 1 1) test-input)
-    '(1 1 1 1)
-    )))
+(define sketch (??program 2 3))
+(define sinputs (??inputs (lambda (x) 'click) 4 2))
 
-; (synthesize
-;   #:forall (symbolics ??inputs)
-;   #:guarantee (assert (equal?
-;     (program-interpret spec ??inputs)
-;     (program-interpret (??program 2 1) ??inputs)
-;     )))
+(define M
+  (synthesize
+    #:forall (symbolics sinputs)
+    #:guarantee (assert (equal?
+      (program-interpret spec sinputs)
+      (program-interpret sketch sinputs)
+      )))
+)
+
+sketch
+M
+(evaluate sketch M)
