@@ -1,82 +1,103 @@
 #lang rosette
 
-(require rosette/lib/angelic)
+(require
+  rosette/lib/angelic
+  "lang2.rkt")
 
 (provide (all-defined-out))
 
 
 (define (??constant)
-  (define-symbolic* int integer?)
-  (define-symbolic* bool boolean?)
-  (choose* int bool))
+  (define-symbolic* si integer?)
+  si)
+  ; (define-symbolic* si integer?)
+  ; (define-symbolic* sb boolean?)
+  ; (choose* si sb))
 
 (define (??stream constructor size)
-  (define-symbolic* bool boolean?)
+  (define-symbolic* sb boolean?)
   (for/list ([i size])
-    (if bool
+    (if sb
       (constructor)
       empty)))  ; empty-event
 
-; (define (r?? lookup)
-;   (choose* (r))
-;   )
+(define (??r lookup)
+  (define-symbolic* si integer?)
+  (r si))
 
-(define (??binfactory arg1 arg2)
+(define (??binfactory)
   (choose*
-    (xsmerge ??stream arg2)))
+    (xsmerge ??r ??r)))
 
-(define (xsmapTo arg$ arg1)
-  (map
-    (lambda (x) (if (empty? x) empty arg1))
-    arg$))
-
-(define (??unoperator arg$ arg1)  ; TODO: remove inputs and generate them
-  (choose*
-    (xsmapTo arg$ arg1)))
+(define (??unoperator)
+  (xsmapTo ??r ??constant))
+  ; (choose*
+  ;   (xsmapTo ??r ??constant)))
 
 (define (??instruction regs)
-  (define r1 (apply choose* regs))
-  (define r2 (apply choose* regs))
-  (choose* (??binfactory r1 r2) (??unoperator r1 r2)))
+  ; (choose* (??binfactory) (??unoperator)))
+  (??unoperator))
 
+; (define (??program inputs numinsts)
+;   (define size (+ (length inputs) numinsts))
+;   (define reg (make-vector size))
+;   (define (store i v) (vector-set! reg i v))
+;   (define (load i) (vector-ref reg i))
+;   (for ([(input i) (in-indexed inputs)])
+;     (store i input))
 
-; (define (??program size inputs)
-;   ; warn
-;   (define regs inputs)
-;   (for/list [i size]
-;     (append regs (??instruction regs)))
+;   (for ([i (in-range (length inputs) (vector-length reg))])
+;     (define defined-reg (vector-take reg (add1 i)))
+;     (store i (??instruction defined-reg)))
+
+;   (load (sub1 size))
 ;   )
 
-; Example
-; (define reg (??stream (lambda () 'click) 10))
-
-(define inputs (list (list 'click empty) (list empty' click)))
-
-(define (prog inputs)
-  (define regs inputs)
-
-  (define instructions
-    (list xsmerge))  ; index?
-
-  (append regs (for/list ([(inst i) (in-indexed instructions)])
-    (inst (list-ref regs 0) (list-ref regs 1))
-    ))
-  ; regs
+(define (??program numinputs numinsts)
+  (program
+    numinputs
+    (for/list ([i numinsts]) ??instruction)
+    )
   )
 
-(prog inputs)
+; Example
 
-
-
-(define (??program n k insts)
-
+(define spec
   (program
-   n
-   (for/list ([output (in-range n (+ n k))])
-     (??instruction insts (build-list output identity)))))
+    2
+    (list
+      (xsmapTo (r 0) 1)
+      ; (xsmapTo (r 1) -1)
+      ; (xsmerge (r 2) (r 3))
+      )))
 
-; (lambda (f lst results)
-;   (cond
-;     [(empty? lst) 0]
-;     [])
-;   )
+(define inputs
+  (list
+    (list 'click empty 'click empty)
+    (list empty 'click empty 'click)
+    ))
+
+(program-interpret spec inputs)
+
+
+(define ??inputs
+  (list ??stream ??stream))
+
+
+(define test-input
+  (list
+    (list 0 0 0 0)
+    ))
+
+(solve
+  (assert (equal?
+    (program-interpret (??program 1 1) test-input)
+    '(1 1 1 1)
+    )))
+
+; (synthesize
+;   #:forall (symbolics ??inputs)
+;   #:guarantee (assert (equal?
+;     (program-interpret spec ??inputs)
+;     (program-interpret (??program 2 1) ??inputs)
+;     )))
