@@ -21,19 +21,19 @@
 (struct xsfold binoperator () #:transparent)
 
 
-(struct register (index) #:transparent)
+(struct r (idx) #:transparent)  ; r(esigter)-i(n)d(e)x
 (struct program (numinputs instructions) #:transparent)
 
 
 ; Semantics
 
-(define (register-interpret reg lookup)
-  (define idx (register-index reg))
-  (vector-ref lookup idx))
+(define (r-interpret r reg)
+  (define i (r-idx r))
+  (vector-ref reg i))
 
-(define (binfactory-interpret fact lookup)
-  (define arg1 (register-interpret (binfactory-arg1 fact) lookup))
-  (define arg2 (register-interpret (binfactory-arg2 fact) lookup))
+(define (binfactory-interpret fact reg)
+  (define arg1 (r-interpret (binfactory-arg1 fact) reg))
+  (define arg2 (r-interpret (binfactory-arg2 fact) reg))
   (cond
     [(xsmerge? fact)
       (map
@@ -41,47 +41,43 @@
         arg1 arg2)
       ]))
 
-(define (unoperator-interpret op lookup)
-  (define arg$ (register-interpret (operator-arg$ op) lookup))
+(define (unoperator-interpret op reg)
+  (define arg$ (r-interpret (operator-arg$ op) reg))
   (cond
     [(xsmapTo? op)
       (define c (unoperator-arg1 op))
       (map (lambda (x) (if (empty? x) empty c)) arg$)
       ]))
 
-(define (instruction-interpret inst lookup)
+(define (instruction-interpret inst reg)
   (cond
-    [(binfactory? inst) (binfactory-interpret inst lookup)]
-    [(unoperator? inst) (unoperator-interpret inst lookup)]))
+    [(binfactory? inst) (binfactory-interpret inst reg)]
+    [(unoperator? inst) (unoperator-interpret inst reg)]))
 
 (define (program-interpret inst inputs)
   (unless (= (program-numinputs prog) (length inputs))
     (error 'interpret "expected ~a inputs, given ~a" (program-numinputs prog) inputs))
   (define insts (program-instructions prog))
   (define size (+ (length inputs) (length insts)))
-
-  (define lookup (make-vector size))
-
+  (define reg (make-vector size))
+  (define (store i v) (vector-set! reg i v))
   (for ([(input i) (in-indexed inputs)])
-    (vector-set! lookup i input))
-
-  (for ([inst insts] [i (in-range (length inputs) (vector-length lookup))])
-    (vector-set!
-      lookup
-      i
-      (instruction-interpret inst (vector-take lookup (add1 i)))))
-
-  lookup
+    (store i input))
+  (for ([inst insts] [i (in-range (length inputs) (vector-length reg))])
+    (define defined-reg (vector-take reg (add1 i)))
+    (store i (instruction-interpret inst defined-reg)))
+  reg
   )
 
 
+; Example program
 (define prog
   (program
     2
     (list
-      (xsmapTo (register 0) 1)
-      (xsmapTo (register 1) -1)
-      (xsmerge (register 2) (register 3))
+      (xsmapTo (r 0) 1)
+      (xsmapTo (r 1) -1)
+      (xsmerge (r 2) (r 3))
       )))
 
 (define inputs

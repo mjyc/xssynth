@@ -17,21 +17,20 @@
       (constructor)
       empty)))  ; empty-event
 
-(define (xsmerge arg1 arg2)
-  (map
-    (lambda (event1 event2) (if (empty? event2) event1 event2))
-    arg1 arg2))
+; (define (r?? lookup)
+;   (choose* (r))
+;   )
 
 (define (??binfactory arg1 arg2)
   (choose*
-    (xsmerge arg1 arg2)))
+    (xsmerge ??stream arg2)))
 
 (define (xsmapTo arg$ arg1)
   (map
     (lambda (x) (if (empty? x) empty arg1))
     arg$))
 
-(define (??unoperator arg$ arg1)
+(define (??unoperator arg$ arg1)  ; TODO: remove inputs and generate them
   (choose*
     (xsmapTo arg$ arg1)))
 
@@ -66,3 +65,18 @@
   )
 
 (prog inputs)
+
+
+
+(define (??program n k insts)
+
+  (program
+   n
+   (for/list ([output (in-range n (+ n k))])
+     (??instruction insts (build-list output identity)))))
+
+; (lambda (f lst results)
+;   (cond
+;     [(empty? lst) 0]
+;     [])
+;   )

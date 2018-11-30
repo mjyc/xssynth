@@ -1,6 +1,9 @@
 #lang racket
 
-(require quickcheck rackunit/quickcheck "lang2.rkt" rackunit rackunit/text-ui)
+(require
+  rackunit rackunit/text-ui
+  quickcheck rackunit/quickcheck
+  "lang2.rkt")
 
 
 ; Custom generators and arbitraries
@@ -11,7 +14,7 @@
                          )))
 
 (define generator-empty-event
-  (generator (lambda (i rgen) (empty-event))))
+  (generator (lambda (i rgen) empty)))
 
 (define arbitrary-empty-event
   (arbitrary generator-empty-event
@@ -33,27 +36,13 @@
 
 ; Tests
 
-(define (test-constant-interpret)
-  (test-case "test-constant-interpret"
-    (check-property
-      (property ([int-or-bool arbitrary-integer-or-boolean])
-        (define c (constant int-or-bool))
-        (eqv? (constant-interpret c)
-              int-or-bool)))
-  ))
-
-(define (test-$-interpret)
-  (test-case "test-$-interpret"
-    (check-property
-      (property ([events (arbitrary-tuple-events)])
-        (define s (stream events))
-        (equal? ($-interpret s) s)))
-  ))
+; (define (test-something)
+;   (test-case "test-something"
+;     (check-property
+;       (property ([...
 
 
 (define/provide-test-suite lang2-tests
-  (test-constant-interpret)
-  (test-$-interpret)
   )
 
 (run-tests lang2-tests)
