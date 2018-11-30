@@ -13,7 +13,7 @@
 
 (struct $ () #:transparent)
 (struct stream $ (events) #:transparent)
-(struct memory $ (values [init #:auto]) #:transparent #:auto-value (empty-event))
+; (struct memory $ (values [init #:auto]) #:transparent #:auto-value (empty-event))
 
 
 (struct factory () #:transparent)
@@ -30,7 +30,7 @@
 (struct xsmapTo unoperator (arg1))
 (struct xsstartWith unoperator (arg1))
 (struct xsfold binoperator (arg1 arg2))
-(struct xsremember factory ())
+; (struct xsremember factory ())
 
 
 (struct instruction () #:transparent)  ; list of factories & operators
@@ -52,12 +52,48 @@
   (constant-value c))
 
 (define ($-interp s)
-  s)
+  (stream-events s))
 
-; (define (facotry-interp fact)
-;   (match fact
-;     [(xsmerge arg1 arg2)
-;      (arg1)]))  ; implement it here
+(define (register-interp reg lookup)
+  (define idx (register-idx reg))
+  (if (>= idx (length lookup))
+    (error 'register-interp "invalid input" reg))
+  (list-ref lookup idx))
+
+(define (facotry-interp fact reg lookup)
+  (match fact
+    [(xsmerge arg1 arg2)
+     (map (lambda (event1 event2) (if (empty-event? event2) event1 event2))
+          (register-interp arg1 lookup) (register-interp arg2 lookup))]))
+
+(define (operator-interp op)
+  (match op
+    [(xsmapTo arg$ arg2)
+     (lambda (x) (if (empty-event? x) (empty-event) (constant-interp arg2)))]
+    []))
+
+
+(define (instruction-interp) inst
+  (match inst
+    [(factory _) (facotry-interp inst lookup)]
+    [(operator _) (facotry-interp inst lookup)]))
+
+(define (interpret prog)
+  (define lookup '()) ; add inputs
+  (define insts (program-instructions prog))
+
+  ; loop it and store it one by one
+  ; for
+  ; ( (instruction-interp)
+
+  )
+
+     ; (stream (map (lambda (event1 event2) (if (empty-event? event2) event1 event2))
+     ;   r1-events r2-events))
+
+     ; (map (lambda (event1 event2) (if (empty-event? event2) event1 event2))
+     ;      (register-interp arg1 lookup) (register-interp arg2 lookup))]))
+
 
 ; (define (operator-interp op)
 ;   (match op
