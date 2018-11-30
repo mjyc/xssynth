@@ -3,17 +3,7 @@
 (provide (all-defined-out))
 
 
-; ------
 ; Syntax
-; ------
-
-(struct constant (value) #:transparent)
-
-(struct empty-event () #:transparent)
-
-(struct $ () #:transparent)
-(struct stream $ (events) #:transparent)
-
 
 (struct factory () #:transparent)
 (struct binfactory factory (arg1 arg2) #:transparent)
@@ -32,57 +22,72 @@
 
 
 (struct register (index) #:transparent)
-(struct instruction () #:transparent)  ; list of factories & operators
+(struct program (numinputs instructions) #:transparent)
 
 
-(struct program (num-inputs instructions) #:transparent)
-
-
-
-
-
-
-
-; ---------
 ; Semantics
-; ---------
-
-(define (constant-interpret c)
-  (constant-value c))  ; boolean or integer for now
-
-(define ($-interpret s)
-  s)  ; just stream for now
 
 (define (register-interpret reg lookup)
   (define idx (register-index reg))
-  (unless (< idx (vector-length lookup))
-    (error 'register-interpret "invalid input" reg))
   (vector-ref lookup idx))
 
-(define (factory-interpret fact lookup)
-  (match fact
-    [(xsmerge arg1 arg2)
-     (map (lambda (event1 event2) (if (empty-event? event2) event1 event2))
-          (stream-events (register-interpret arg1 lookup))
-          (stream-events (register-interpret arg2 lookup)))]
-    ; TODO: add more factory-interpreters here
+(define (binfactory-interpret fact lookup)
+  (define arg1 (register-interpret (binfactory-arg1 fact) lookup))
+  (define arg2 (register-interpret (binfactory-arg2 fact) lookup))
+  (cond
+    [(xsmerge? fact)
+      (map
+        (lambda (event1 event2) (if (empty? event2) event1 event2))
+        arg1 arg2)
+      ]))
+
+(define (unoperator-interpret op lookup)
+  (define arg$ (register-interpret (operator-arg$ op) lookup))
+  (cond
+    [(xsmapTo? op)
+      (define c (unoperator-arg1 op))
+      (map (lambda (x) (if (empty? x) empty c)) arg$)
+      ]))
+
+(define (instruction-interpret inst lookup)
+  (cond
+    [(binfactory? inst) (binfactory-interpret inst lookup)]
+    [(unoperator? inst) (unoperator-interpret inst lookup)]))
+
+(define (program-interpret inst inputs)
+  (unless (= (program-numinputs prog) (length inputs))
+    (error 'interpret "expected ~a inputs, given ~a" (program-numinputs prog) inputs))
+  (define insts (program-instructions prog))
+  (define size (+ (length inputs) (length insts)))
+
+  (define lookup (make-vector size))
+
+  (for ([(input i) (in-indexed inputs)])
+    (vector-set! lookup i input))
+
+  (for ([inst insts] [i (in-range (length inputs) (vector-length lookup))])
+    (vector-set!
+      lookup
+      i
+      (instruction-interpret inst (vector-take lookup (add1 i)))))
+
+  lookup
+  )
+
+
+(define prog
+  (program
+    2
+    (list
+      (xsmapTo (register 0) 1)
+      (xsmapTo (register 1) -1)
+      (xsmerge (register 2) (register 3))
+      )))
+
+(define inputs
+  (list
+    (list 'click empty 'click empty)
+    (list empty 'click empty 'click)
     ))
 
-(define (operator-interpret op lookup)
-  (match op
-    [(xsmapTo arg1 arg2)
-     (map (lambda (x) (if (empty-event? x) (empty-event) (constant-interpret arg2)))
-          (register-interpret arg1 lookup))]
-    ; TODO: add more operator-interpreters here
-    ))
-
-(define (instruction-interpret) inst lookup
-  (match inst
-    [(factory _) (facotry-interpret inst lookup)]
-    [(operator _) (operator-interpret inst lookup)]))
-
-; (instruction-interpret (xsmapTo (register 0) (constant 1)  ))
-
-; (define (interpret prog)
-;   (define lookup '()) ; add inputs
-;   (define insts (program-instructions prog)))
+(program-interpret (program 2 prog) inputs)

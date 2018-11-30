@@ -3,7 +3,6 @@
 (require quickcheck rackunit/quickcheck "lang2.rkt" rackunit rackunit/text-ui)
 
 
-; ------------------------------------------------------------------------------
 ; Custom generators and arbitraries
 
 (define arbitrary-integer-or-boolean
@@ -32,7 +31,6 @@
       (build-list tup-size (lambda (x) arb)))))
 
 
-; ------------------------------------------------------------------------------
 ; Tests
 
 (define (test-constant-interpret)
