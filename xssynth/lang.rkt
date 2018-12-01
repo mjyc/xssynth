@@ -5,12 +5,6 @@
 
 ; Syntax
 
-; (struct expr () #:transparent)
-; (struct binexpr expr (arg1 arg2) #:transparent)
-
-; (struct plus binexpr () #:transparent)
-
-
 (struct factory () #:transparent)
 (struct binfactory factory (arg1 arg2) #:transparent)
 
@@ -35,14 +29,6 @@
 (define (r-interpret r reg)
   (if (r? reg)  ; otherwise, assumes it's events
     (vector-ref reg (r-idx r)) r))
-
-; (define (binexpr-interpret expr)
-;   (define arg1 (unexpr-arg1 expr))
-;   (define arg2 (unexpr-arg2 expr))
-;   (cond
-;     [(plus? expr)
-;       (+ arg1 arg2)])
-;   )
 
 (define (constant? x)
   (or (integer? x) (boolean? x)))

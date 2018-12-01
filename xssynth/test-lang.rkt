@@ -41,13 +41,11 @@
     (check-property
       (property ([tup-evts (arbitrary-tuple-events 1 arbitrary-integer)])
         (define events (map first tup-evts))
-
-        ; (xsmap  (lambda x (+ x 1)))
-        (displayln (r-interpret events null))
-        #t
+        (equal?
+          (unoperator-interpret (xsmap events (lambda (x) (add1 x))) null)
+          (map (lambda (x) (add1 x)) events))
         )
       )))
-
 
 
 (define/provide-test-suite lang2-tests
