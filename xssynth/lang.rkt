@@ -1,143 +1,71 @@
 #lang rosette
 
-(require rosette/lib/angelic rosette/lib/match)
-
 (provide (all-defined-out))
 
 
-; ------
 ; Syntax
-; ------
 
-; A tiny subset of xstream API
-;   * https://github.com/staltz/xstream
+(struct factory () #:transparent)
+(struct binfactory factory (arg1 arg2) #:transparent)
 
-
-; Stream as list of events over discrete timesteps
-
-(struct empty-event () #:transparent)
-
-; simplified version of xstream's Stream
-;   * events is the list representing events over discrete timesteps,
-;     e.g., '(1 (empty-event) 2 ...)
-;   * https://github.com/staltz/xstream#stream
-(struct stream (events) #:transparent)
-
-; simplified version of xstream's MemoryStream
-;   * init is the memory(-stream)'s initial value of and values is the list
-;     representing memory(-stream)'s current values over discrete timesteps
-;   * https://github.com/staltz/xstream#memorystream
-(struct memory (values [init #:auto]) #:transparent #:auto-value (empty-event))
+(struct xsmerge binfactory () #:transparent)
 
 
-; Instruction as register definition
+(struct operator (arg$) #:transparent)
+(struct unoperator operator (arg1) #:transparent)
+(struct binoperator operator (arg1 arg2) #:transparent)
 
-(struct instruction () #:transparent)
-(struct unary instruction (r1) #:transparent)          ; unary instruction
-(struct binary instruction (r1 r2) #:transparent)      ; binary instruction
-(struct ternary instruction (r1 r2 r3) #:transparent)  ; ternary instruction
-
-; a tiny subset of xstream's Factories
-;   * https://github.com/staltz/xstream#factories
-; (struct xsof unary () #:transparent)
-(struct xsmerge binary () #:transparent)
-
-; a tiny subset of xstream's Operators
-;   * https://github.com/staltz/xstream#operators
-(struct xsstartWith binary () #:transparent)
-(struct xsmapTo binary () #:transparent)
-(struct xsfold ternary () #:transparent)
-(struct xsremember unary () #:transparent)
+(struct xsmap binfactory () #:transparent)
+(struct xsmapTo unoperator () #:transparent)
+(struct xsstartWith unoperator () #:transparent)
+(struct xsfold binoperator () #:transparent)
 
 
-; Program as list of instructions
-
-; inputs is the number of the program inputs
-(struct program (inputs instructions) #:transparent)
+(struct r (idx) #:transparent)  ; r(esigter)-i(n)d(e)x
+(struct program (numinputs instructions) #:transparent)
 
 
+; Semantics
 
-;; ----------------
-;; Semantics
+(define (r-interpret r reg)
+  (define i (r-idx r))
+  (vector-ref reg i))
 
-; (define (interpret-operator operator)
-;   (match operator
-;     [xsmerge]
-;     ))
+(define (binfactory-interpret fact reg)
+  (define arg1 (r-interpret (binfactory-arg1 fact) reg))
+  (define arg2 (r-interpret (binfactory-arg2 fact) reg))
+  (cond
+    [(xsmerge? fact)
+      (map
+        (lambda (event1 event2) (if (empty? event2) event1 event2))
+        arg1 arg2)
+      ]))
 
-; (interpret-operator (xsmerge stream1))
+(define (unoperator-interpret op reg)
+  (define arg$ (r-interpret (operator-arg$ op) reg))
+  (cond
+    [(xsmapTo? op)
+      (define c (unoperator-arg1 op))
+      (map (lambda (x) (if (empty? x) empty c)) arg$)
+      ]))
 
-(define interpret-operator )
+(define (instruction-interpret inst reg)
+  (cond
+    [(binfactory? inst) (binfactory-interpret inst reg)]
+    [(unoperator? inst) (unoperator-interpret inst reg)]))
 
-(define (interpret-xsmerge r1 r2)
-  (define r1-events (if (memory? r1) (memory-values r1) (stream-events r1)))
-  (define r2-events (if (memory? r2) (memory-values r2) (stream-events r2)))
-  (stream (map (lambda (event1 event2) (if (empty-event? event2) event1 event2))
-       r1-events r2-events)))
-
-; (define (interp-xsmapTo r1 r2)
-;   (define f (lambda (x) (if (empty-event? x) (empty-event) const)))
-;   (cond [(stream? r2) (map f (stream-events r2))]
-;         [else (map f (memory-values r2))]))
-
-; (define (interp-startWith r1 r2 r3)
-;   (define f (lambda (x) (if (empty-event? x) (empty-event) const)))
-;   (cond [(stream? r2) (map f (stream-events r2))]
-;         [else (map f (memory-values r2))]))
-
-; (define (interp-map r1 r2 r3)
-;   (define f (lambda (x) (if (empty-event? x) (empty-event) const)))
-;   (cond [(stream? r2) (map f (stream-events r2))]
-;         [else (map f (memory-values r2))]))
-
-; (define (interp-mapTo r1 r2 r3)
-;   (define f (lambda (x) (if (empty-event? x) (empty-event) const)))
-;   (cond [(stream? r2) (map f (stream-events r2))]
-;         [else (map f (memory-values r2))]))
-
-; (define (interp-fold r1 r2 r3)
-;   (define f (lambda (x) (if (empty-event? x) (empty-event) const)))
-;   (cond [(stream? r2) (map f (stream-events r2))]
-;         [else (map f (memory-values r2))]))
-
-; ;; Stream
-; (define (constantE const evt-stream)
-;   (map (lambda (x) (if (empty-event? x) 'no-evt const)) evt-stream))
-
-; (define (mergeE evt-stream1 evt-stream2)
-;   (map (lambda (evt1 evt2) (if (empty-event? evt2) evt1 evt2))
-;        evt-stream1 evt-stream2))
-
-; The interpreter
-(define (interpret prog inputs)
-  (unless (= (program-inputs prog) (length inputs))
-    (error 'interpret "expected ~a inputs, given ~a" (program-inputs prog) inputs))
+(define (program-interpret prog inputs)
+  (unless (= (program-numinputs prog) (length inputs))
+    (error 'interpret "expected ~a inputs, given ~a" (program-numinputs prog) inputs))
   (define insts (program-instructions prog))
   (define size (+ (length inputs) (length insts)))
   (define reg (make-vector size))
   (define (store i v) (vector-set! reg i v))
-
-  (define (load i)
-    (printf "reg ~a~%" reg)
-    (vector-ref reg i))
-
-  (printf "before reg ~a~%" reg)
-  (for ([(in i) (in-indexed inputs)])
-    (store i in))
-  (printf "init reg ~a~%" reg)
-
-  (for ([inst insts] [idx (in-range (length inputs) (vector-length reg))])
-    (printf "inst ~a~%" inst)
-    (match inst
-      [(mapTo r1 r2) (store idx (constantE r1 r2))]
-      [(merge r1 r2) (store idx (mergeE r1 r2))]
-      ))
-  (load (- size 1))
+  (define (load i) (vector-ref reg i))
+  (for ([(input i) (in-indexed inputs)])
+    (store i input))
+  (for ([inst insts] [i (in-range (length inputs) (vector-length reg))])
+    (define defined-reg (vector-take reg (add1 i)))
+    (store i (instruction-interpret inst defined-reg)))
+  (load (sub1 size))
   )
-
-
-; ; (define prog
-; ;   (program 0 (list (mapTo 1 '(no-evt no-evt no-evt click)))))
-; (define prog
-;   (program 0 (list (merge '(no-evt no-evt hello click) '(no-evt no-evt no-evt click)))))
-; (interpret prog '())
