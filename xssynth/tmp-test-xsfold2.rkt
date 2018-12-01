@@ -56,22 +56,22 @@
   (solve
     (assert
       (equal?
-        ; (program-interpret spec inputs)  ; this doesn't work! why?
-        ; (program-interpret sketch inputs)  ; this doesn't work! why?
+        (program-interpret spec inputs)  ; this doesn't work! why?
+        (program-interpret sketch inputs)  ; this doesn't work! why?
 
-        ; (binoperator-interpret
-        (instruction-interpret
-          (first (program-instructions spec))
-          ; (vector (list 1 2))
-          (list->vector inputs)
-          )
+        ; ; (binoperator-interpret
+        ; (instruction-interpret
+        ;   (first (program-instructions spec))
+        ;   ; (vector (list 1 2))
+        ;   (list->vector inputs)
+        ;   )
 
-        ; (binoperator-interpret
-        (instruction-interpret
-          (first (program-instructions sketch))
-          ; (vector (list 1 2))
-          (list->vector inputs)
-          )
+        ; ; (binoperator-interpret
+        ; (instruction-interpret
+        ;   (first (program-instructions sketch))
+        ;   ; (vector (list 1 2))
+        ;   (list->vector inputs)
+        ;   )
 
         )))
   )

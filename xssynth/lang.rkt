@@ -1,6 +1,10 @@
 #lang rosette
 
-; (require (rename-in (only-in rosette/query/debug define/debug) [define/debug define]))
+(require
+  "lib.rkt"
+  rosette/lib/lift
+  (rename-in (only-in rosette/query/debug define/debug) [define/debug define])
+  )
 
 (provide (all-defined-out))
 
@@ -92,7 +96,7 @@
   (for ([(input i) (in-indexed inputs)])
     (store i input))
   (for ([inst insts] [i (in-range (length inputs) (vector-length reg))])
-    (define defined-reg (vector-take reg (add1 i)))
-    (store i (instruction-interpret inst defined-reg)))
+    ; (define defined-reg (vector-take reg (add1 i)))
+    (store i (instruction-interpret inst (vector-take reg (add1 i)))))
   (load (sub1 size))
   )
