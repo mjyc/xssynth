@@ -26,9 +26,9 @@
 
 ; Semantics
 
-(define (r-interpret r reg)
-  (if (r? reg)  ; otherwise, assumes it's events
-    (vector-ref reg (r-idx r)) r))
+(define (r-interpret v reg)
+  (if (r? v)  ; otherwise, assumes it's events
+    (vector-ref reg (r-idx v)) v))
 
 (define (constant? x)
   (or (integer? x) (boolean? x)))
@@ -76,7 +76,8 @@
 (define (instruction-interpret inst reg)
   (cond
     [(binfactory? inst) (binfactory-interpret inst reg)]
-    [(unoperator? inst) (unoperator-interpret inst reg)]))
+    [(unoperator? inst) (unoperator-interpret inst reg)]
+    [(binoperator? inst) (binoperator-interpret inst reg)]))
 
 (define (program-interpret prog inputs)
   (unless (= (program-numinputs prog) (length inputs))

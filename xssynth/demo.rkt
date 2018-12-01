@@ -18,8 +18,8 @@
 (program-interpret
   spec
   (list
-    (list 'click empty 'click empty)
-    (list empty 'click empty 'click)
+    (list #t empty #t empty)
+    (list empty #f empty #f)
     ))
 
 
@@ -29,7 +29,8 @@
 (define sketch
   (program
     (length inputs)
-    (build-list (length inputs) (lambda (x) (??instruction)))
+    (build-list (length (program-instructions spec))
+      (lambda (x) (??instruction)))
     ))
 
 (define M
@@ -40,5 +41,6 @@
       (program-interpret sketch inputs)
       ))))
 
+M
 (printf "~%Synthesized program:~%")
 (evaluate sketch M)

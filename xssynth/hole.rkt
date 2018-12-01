@@ -27,14 +27,21 @@
 
 (define (??binfactory)
   (choose*
-    (xsmerge (??r) (??r))))
+    (xsmerge (??r) (??r)))
+    )
 
 (define (??unoperator)
   (choose*
-    (xsmapTo (??r) (??constant))))
+    (xsmapTo (??r) (??constant)))
+    )
+
+(define (??binoperator)
+  (choose*
+    (xsfold (??r) + 0))
+    )
 
 (define (??instruction)
-  (choose* (??binfactory) (??unoperator)))
+  (choose* (??binfactory) (??unoperator) (??binoperator)))
 
 (define (??inputs constructor input-size n)
   (build-list n (lambda (x) (??stream constructor input-size))))
