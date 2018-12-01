@@ -5,6 +5,12 @@
 
 ; Syntax
 
+; (struct expr () #:transparent)
+; (struct binexpr expr (arg1 arg2) #:transparent)
+
+; (struct plus binexpr () #:transparent)
+
+
 (struct factory () #:transparent)
 (struct binfactory factory (arg1 arg2) #:transparent)
 
@@ -15,9 +21,8 @@
 (struct unoperator operator (arg1) #:transparent)
 (struct binoperator operator (arg1 arg2) #:transparent)
 
-(struct xsmap binfactory () #:transparent)
+(struct xsmap unoperator () #:transparent)
 (struct xsmapTo unoperator () #:transparent)
-(struct xsstartWith unoperator () #:transparent)
 (struct xsfold binoperator () #:transparent)
 
 
@@ -28,8 +33,19 @@
 ; Semantics
 
 (define (r-interpret r reg)
-  (define i (r-idx r))
-  (vector-ref reg i))
+  (if (r? reg)  ; otherwise, assumes it's events
+    (vector-ref reg (r-idx r)) r))
+
+; (define (binexpr-interpret expr)
+;   (define arg1 (unexpr-arg1 expr))
+;   (define arg2 (unexpr-arg2 expr))
+;   (cond
+;     [(plus? expr)
+;       (+ arg1 arg2)])
+;   )
+
+(define (constant? x)
+  (or (integer? x) (boolean? x)))
 
 (define (binfactory-interpret fact reg)
   (define arg1 (r-interpret (binfactory-arg1 fact) reg))
@@ -44,6 +60,10 @@
 (define (unoperator-interpret op reg)
   (define arg$ (r-interpret (operator-arg$ op) reg))
   (cond
+    [(xsmap? op)
+      (define f (unoperator-arg1 op))
+      (map (lambda (x) (if (empty? x) x (f x))) arg$)
+      ]
     [(xsmapTo? op)
       (define c (unoperator-arg1 op))
       (map (lambda (x) (if (empty? x) empty c)) arg$)

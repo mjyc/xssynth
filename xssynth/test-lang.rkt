@@ -13,22 +13,22 @@
                          (cons '() arbitrary-boolean)
                          )))
 
-(define generator-empty-event
+(define generator-empty
   (generator (lambda (i rgen) empty)))
 
-(define arbitrary-empty-event
-  (arbitrary generator-empty-event
+(define arbitrary-empty
+  (arbitrary generator-empty
              (lambda (x gen) gen)
              ))
 
-(define arbitrary-integer-or-boolean-or-empty-event
+(define arbitrary-integer-or-boolean-or-empty
     (arbitrary-mixed (list (cons '() arbitrary-integer)
                            (cons '() arbitrary-boolean)
-                           (cons '() arbitrary-empty-event)
+                           (cons '() arbitrary-empty)
                            )))
 
 (define (arbitrary-tuple-events [tup-size 1]
-                                [arb arbitrary-integer-or-boolean-or-empty-event])
+                                [arb arbitrary-integer-or-boolean-or-empty])
   (arbitrary-list
     (apply arbitrary-tuple
       (build-list tup-size (lambda (x) arb)))))
@@ -36,13 +36,22 @@
 
 ; Tests
 
-; (define (test-something)
-;   (test-case "test-something"
-;     (check-property
-;       (property ([...
+(define (test-xsmap)
+  (test-case "test-xsmap"
+    (check-property
+      (property ([tup-evts (arbitrary-tuple-events 1 arbitrary-integer)])
+        (define events (map first tup-evts))
+
+        ; (xsmap  (lambda x (+ x 1)))
+        (displayln (r-interpret events null))
+        #t
+        )
+      )))
+
 
 
 (define/provide-test-suite lang2-tests
+  (test-xsmap)
   )
 
 (run-tests lang2-tests)
