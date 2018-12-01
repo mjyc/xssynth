@@ -1,5 +1,7 @@
 #lang rosette
 
+; (require (rename-in (only-in rosette/query/debug define/debug) [define/debug define]))
+
 (provide (all-defined-out))
 
 

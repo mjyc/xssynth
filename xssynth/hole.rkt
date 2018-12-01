@@ -2,7 +2,9 @@
 
 (require
   rosette/lib/angelic
-  "lang.rkt")
+  "lang.rkt"
+  ; (rename-in (only-in rosette/query/debug define/debug) [define/debug define])
+  )
 
 (provide (all-defined-out))
 
