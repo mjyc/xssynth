@@ -55,6 +55,24 @@
       (map (lambda (x) (if (empty? x) empty c)) arg$)
       ]))
 
+(define (binoperator-interpret op reg)
+  (define arg$ (r-interpret (operator-arg$ op) reg))
+  (cond
+    [(xsfold? op)
+      (define f (binoperator-arg1 op))
+      (define s (binoperator-arg2 op))
+
+      (rest  ; do not include s(eed)
+        (reverse
+          (for/fold ([lst (list s)]) ([x arg$])
+            (cons
+              (if (empty? x)
+                (first lst)
+                (f x (first lst)))
+              lst))
+            ))
+      ]))
+
 (define (instruction-interpret inst reg)
   (cond
     [(binfactory? inst) (binfactory-interpret inst reg)]
