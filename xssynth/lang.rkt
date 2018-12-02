@@ -1,7 +1,6 @@
 #lang rosette
 
 (require
-  "lib.rkt"
   rosette/lib/lift
   (rename-in (only-in rosette/query/debug define/debug) [define/debug define])
   )
@@ -76,7 +75,7 @@
                 (first lst)
                 (f x (first lst)))
               lst))
-            ))
+          ))
       ]))
 
 (define (instruction-interpret inst reg)
@@ -88,15 +87,19 @@
 (define (program-interpret prog inputs)
   (unless (= (program-numinputs prog) (length inputs))
     (error 'interpret "expected ~a inputs, given ~a" (program-numinputs prog) inputs))
-  (define insts (program-instructions prog))
-  (define size (+ (length inputs) (length insts)))
-  (define reg (make-vector size))
-  (define (store i v) (vector-set! reg i v))
-  (define (load i) (vector-ref reg i))
-  (for ([(input i) (in-indexed inputs)])
-    (store i input))
-  (for ([inst insts] [i (in-range (length inputs) (vector-length reg))])
-    ; (define defined-reg (vector-take reg (add1 i)))
-    (store i (instruction-interpret inst (vector-take reg (add1 i)))))
-  (load (sub1 size))
+  (define (exec insts reg)
+    (cond
+      [(empty? insts) reg]
+      [else
+        (exec
+          (rest insts)
+          (append reg (list (instruction-interpret (first insts) (list->vector reg))))
+          )
+        ]
+      ))
+  (define reg
+    (exec (program-instructions prog) inputs))
+  (if (or (empty? reg) (= (length reg) (length inputs)))
+    empty
+    (first (reverse reg)))
   )

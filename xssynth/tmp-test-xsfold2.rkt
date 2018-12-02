@@ -7,6 +7,7 @@
 
 (define inputs
   (list
+    (list 0 0 0 0)
     (list 1 1 1 1)
     ))
 
@@ -14,7 +15,7 @@
   (program
     (length inputs)
     (list
-      (xsfold (r 0) + 0)
+      (xsfold (r 1) + 0)
       )))
 
 (define sketch
@@ -41,15 +42,15 @@
 
 (displayln "Synthesized syntax:")
 (evaluate sketch M)
-
-
 (displayln "")
+
 
 (displayln "instruction-interpret:")
 (instruction-interpret
   (first (program-instructions sketch))
   (list->vector inputs)
   )
+(displayln "")
 
 (displayln "Synthesis output:")
 (define M2
@@ -76,3 +77,6 @@
         )))
   )
 M2
+(displayln "")
+
+(evaluate sketch M2)

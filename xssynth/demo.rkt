@@ -17,8 +17,6 @@
       (xsmapTo (r 1) -1)
       (xsmerge (r 2) (r 3))
       ; (xsfold (r 4) + 0)
-      ; (xsmapTo (r 0) 1)
-      ; (xsfold (r 2) + 0)
       )))
 
 (define test-inputs
@@ -55,7 +53,9 @@
 
 
 (define sym-inputs
-  (??inputs (lambda (x) #t) inputsize numinputs))
+  (list
+    (??stream (lambda () #t) numinputs)
+    (??stream (lambda () #f) numinputs)))
 
 (define M2
   (synthesize

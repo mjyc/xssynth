@@ -44,6 +44,3 @@
 
 (define (??instruction)
   (choose* (??binfactory) (??unoperator) (??binoperator)))
-
-(define (??inputs constructor input-size n)
-  (build-list n (lambda (x) (??stream constructor input-size))))
