@@ -1,9 +1,10 @@
 #lang racket
 
 (require
-  rackunit rackunit/text-ui
+  "lang.rkt"
   quickcheck rackunit/quickcheck
-  "lang.rkt")
+  rackunit rackunit/text-ui
+  )
 
 
 ; Custom generators and arbitraries
@@ -80,9 +81,9 @@
         ))))
 
 
-(define/provide-test-suite lang2-tests
+(define/provide-test-suite lang-tests
   (test-xsmap)
   (test-xsfold)
   )
 
-(run-tests lang2-tests)
+(run-tests lang-tests)
