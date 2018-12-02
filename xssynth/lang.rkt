@@ -2,7 +2,7 @@
 
 (require
   rosette/lib/lift
-  (rename-in (only-in rosette/query/debug define/debug) [define/debug define])
+  ; (rename-in (only-in rosette/query/debug define/debug) [define/debug define])
   )
 
 (provide (all-defined-out))
@@ -67,15 +67,18 @@
       (define f (binoperator-arg1 op))
       (define s (binoperator-arg2 op))
 
-      (rest  ; do not include s(eed)
-        (reverse
-          (for/fold ([lst (list s)]) ([x arg$])
-            (cons
-              (if (empty? x)
-                (first lst)
-                (f x (first lst)))
-              lst))
-          ))
+      (define (fold lst acc)
+        (cond
+          [(empty? lst) '()]
+          [else
+            (define x (first lst))
+            (define v
+              (if (empty? x) acc (f x acc)))
+            (cons v (fold (rest lst) v))
+            ]
+          )
+        )
+      (fold arg$ s)
       ]))
 
 (define (instruction-interpret inst reg)

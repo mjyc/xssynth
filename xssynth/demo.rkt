@@ -17,7 +17,7 @@
       (xsmapTo (r 0) 1)
       (xsmapTo (r 1) -1)
       (xsmerge (r 2) (r 3))
-      ; (xsfold (r 4) + 0)
+      (xsfold (r 4) + 0)
       )))
 
 (define test-inputs

@@ -62,15 +62,22 @@
     (check-property
       (property ([tup-evts (arbitrary-tuple-events 1 arbitrary-integer-or-empty)])
         (define events (map first tup-evts))
-        (define lst
+        (define seed 0)
+        (define op +)
+        (define computed
           (binoperator-interpret (xsfold events + 0) null))
-        (define sum
-          (foldl (lambda (x acc) (if (empty? x) acc (+ x acc))) 0 events))
-        (if (empty? events)
-          (equal? lst empty)
-          (equal? (first (reverse lst)) sum))
-        )
-      )))
+        (define expected
+          (rest  ; do not include s(eed)
+            (reverse
+              (for/fold ([lst (list seed)]) ([x events])
+                (cons
+                  (if (empty? x)
+                    (first lst)
+                    (op x (first lst)))
+                  lst))
+              )))
+        (equal? computed expected)
+        ))))
 
 
 (define/provide-test-suite lang2-tests
