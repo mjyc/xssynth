@@ -2,8 +2,7 @@
 
 (require
   "lang.rkt"
-  "hole.rkt"
-  )
+  "hole.rkt")
 
 (define inputsize 4)
 (define numinputs 2)
@@ -15,15 +14,13 @@
     numinputs
     (list
       (xsmapTo (r 0) 1)
-      (xsmapTo (r 1) -1)
-      (xsmerge (r 2) (r 3))
-      ; (xsfold (r 4) + 0)
+      (xsfold (r 2) + 0)
       )))
 
 (define test-inputs
   (list
-    (list #t empty #t empty)
-    (list empty #f empty #f)
+    (list #t #t #t #t)
+    (list empty empty empty empty)
     ))
 
 (displayln "Spec evaluation:")
@@ -56,7 +53,7 @@
 (define sym-inputs
   (list
     (??stream (lambda () #t) numinputs)
-    (??stream (lambda () #f) numinputs)))
+    (??stream (lambda () empty) numinputs)))
 
 (define M2
   (synthesize
