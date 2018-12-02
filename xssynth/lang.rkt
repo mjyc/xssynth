@@ -2,7 +2,10 @@
 
 (require
   rosette/lib/lift
-  ; (rename-in (only-in rosette/query/debug define/debug) [define/debug define])
+  ; (rename-in
+  ;   (only-in rosette/query/debug define/debug)
+  ;   [define/debug define]
+  ;   )
   )
 
 (provide (all-defined-out))
