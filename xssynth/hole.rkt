@@ -3,7 +3,10 @@
 (require
   rosette/lib/angelic
   "lang.rkt"
-  ; (rename-in (only-in rosette/query/debug define/debug) [define/debug define])
+  (rename-in
+    (only-in rosette/query/debug define/debug)
+    [define/debug define]
+    )
   )
 
 (provide (all-defined-out))
@@ -17,8 +20,8 @@
   (choose* ci cb))
 
 (define (??stream constructor size)
-  (define-symbolic* sb boolean?)
   (for/list ([i size])
+    (define-symbolic* sb boolean?)
     (if sb
       (constructor)
       empty)))  ; empty-event
