@@ -1,0 +1,6 @@
+test:
+  tags:
+    - cycle-robot-drivers
+  script:
+  - racket xssynth/test-lang.rkt
+  - racket xssynth/test-hole.rkt
