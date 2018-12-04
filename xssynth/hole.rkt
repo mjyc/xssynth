@@ -1,8 +1,8 @@
 #lang rosette
 
 (require
-  rosette/lib/angelic
   "lang.rkt"
+  rosette/lib/angelic
   ; (rename-in
   ;   (only-in rosette/query/debug define/debug)
   ;   [define/debug define]
