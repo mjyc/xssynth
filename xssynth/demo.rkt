@@ -59,12 +59,12 @@
     (??stream (lambda () #f) numinputs)))
 
 (define M2
-  (synthesize
+  (time (synthesize
     #:forall (symbolics sym-inputs)
     #:guarantee (assert (equal?
       (program-interpret spec sym-inputs)
       (program-interpret sketch sym-inputs)
-      ))))
+      )))))
 
 (printf "~%Program synthesis:~%")
 (if (sat? M2)
