@@ -20,7 +20,7 @@
 (define (trans in s)
   ; (printf "in: ~a s: ~a~%" in s)
   (cond
-    [(and (eqv? s 'init) (equal? in 'c)) 'more]
+    [(and (equal? s 'init) (equal? in 'c)) 'more]
     [(and (equal? s 'more) (equal? in 'a)) 'more]
     [(and (equal? s 'more) (equal? in 'd)) 'more]
     [(and (equal? s 'more) (equal? in 'r)) 'complete]
