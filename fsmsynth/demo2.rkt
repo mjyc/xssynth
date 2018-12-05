@@ -80,5 +80,6 @@
 
 (printf "~%Program synthesis:~%")
 (if (sat? M)
-  M ; (print-forms M)  ; (evaluate sketch M)
+  ; M ; (print-forms M)
+  (evaluate trans-tbl M)
   (displayln "No program found"))

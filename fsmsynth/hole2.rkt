@@ -12,18 +12,20 @@
 (define (??text2say-index texts)
   (apply choose* (build-list (length texts) identity)))
 
+(define trans-tbl
+        (build-list (length sentences)
+          (lambda (x)
+            (choose*
+              (cons 'monologue (??text2say-index sentences))
+              ))))
+
 (define (??transition sentences in m)
   (printf "m ~a in ~a~%" m in)
   (cond
     ; Monologue pattern
     [(and (equal? (model-state m) 'monologue)
           (equal? (input-type in) 'speechsynth-done))
-      (define trans-tbl
-        (build-list (length sentences)
-          (lambda (x)
-            (choose*
-              (cons 'monologue (??text2say-index sentences))
-              ))))
+
       ; (define trans-tbl
       ;   (build-list (length sentences)
       ;     (lambda (x)
