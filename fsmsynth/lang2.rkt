@@ -6,7 +6,7 @@
 
 
 (struct model (state variables outputs) #:transparent)
-(struct variables (text2say-index) #:transparent)
+(struct variables (speech-index) #:transparent)
 (struct outputs (speechsynth
                  speechrecog
                  audioplayer
