@@ -65,52 +65,72 @@
 (program-interpret prog test-inputs)
 
 
-; ; ------------------------------------------------------------------------------
-; ; Program synthesis
+; ------------------------------------------------------------------------------
+; Program synthesis
 
-; (displayln "")
-; (displayln "")
+(displayln "")
+(displayln "")
 
-; (define numinputs 1)
-; (define inputsize 4)
+(define numinputs 1)
+(define inputsize 10)
 
-; (define sym-inputs
-;   (list
-;     (for/list ([i inputsize])
-;       (choose* (input 'speechsynth-done '()) '()))
-;     ))
+(define sym-inputs
+  (list
+    (for/list ([i inputsize])
+      (define-symbolic* b boolean?)
+      (cond
+        [b (input 'speechsynth-done '())]
+        [else
+          (define-symbolic* ab boolean?)
+          (if ab
+            (input 'speechrecog-done 'yes)
+            (input 'speechrecog-done 'no)
+            )
+          ])
+    )))
 
+(define ??trans-tbl (??transition-table monologues questions))
+(define (??trans in m)
+  (??transition
+    in m
+    ??trans-tbl
+    (list  ; Q&A trans-tbl
+      (list  ; Q0,
+        (cons 'monologue 0)  ; A0
+        (cons 'question 1) ; A1
+      )
+      (list  ; Q1,
+        (cons 'monologue 1)  ; A0
+        (cons 'monologue 2) ; A1
+      )
+      )
+    monologues
+    questions
+    answers
+  ))
 
-; (define ??trans-tbl (??transition-table monologues))
-; (define (??trans in m)
-;   (??transition
-;     in m
-;     ??trans-tbl
-;     monologues
-;   ))
+(define M
+  (synthesize
+    #:forall (symbolics sym-inputs)
+    #:guarantee (assert (equal?
+      ; full spec
+      (program-interpret (program
+        numinputs
+        (list
+          (xsfold (r 0) trans (model 'monologue (variables 0) (create-outputs)))
+          )) sym-inputs)
+      ; sketch
+      (program-interpret (program
+        numinputs
+        (list
+          (xsfold (r 0) ??trans (model 'monologue  (variables 0) (create-outputs)))
+          )) sym-inputs)
+      )))
+  )
 
-; (define M
-;   (synthesize
-;     #:forall (symbolics sym-inputs)
-;     #:guarantee (assert (equal?
-;       ; full spec
-;       (program-interpret (program
-;         numinputs
-;         (list
-;           (xsfold (r 0) trans (model 'monologue (variables 0) (create-outputs)))
-;           )) sym-inputs)
-;       ; sketch
-;       (program-interpret (program
-;         numinputs
-;         (list
-;           (xsfold (r 0) ??trans (model 'monologue  (variables 0) (create-outputs)))
-;           )) sym-inputs)
-;       )))
-;   )
-
-; (printf "~%Program synthesis:~%")
-; (if (sat? M)
-;   ; M
-;   ; (print-forms M)
-;   (evaluate ??trans-tbl M)
-;   (displayln "No program found"))
+(printf "~%Program synthesis:~%")
+(if (sat? M)
+  ; M
+  ; (print-forms M)
+  (evaluate ??trans-tbl M)  ; result has symbolic variables, this is because monologue happens at the end and doesn't really matter what happens afterwards
+  (displayln "No program found"))

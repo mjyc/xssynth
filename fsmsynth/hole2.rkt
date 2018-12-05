@@ -11,14 +11,14 @@
 (define (??speech-index speeches)
   (apply choose* (build-list (length speeches) identity)))
 
-; (define (??transition-table monologues questions)
-;   (build-list (length monologues)
-;     (lambda (x)
-;       (choose*
-;         (cons 'monologue (??speech-index monologues))
-;         (cons 'question (??speech-index questions))
-;         ; (cons 'instruction (??speech-index instructions))
-;         ))))
+(define (??transition-table monologues questions)
+  (build-list (length monologues)
+    (lambda (x)
+      (choose*
+        (cons 'monologue (??speech-index monologues))
+        (cons 'question (??speech-index questions))
+        ; (cons 'instruction (??speech-index instructions))
+        ))))
 
 ; (define (??answer-transition-table questions answers monologues)
 ;   (build-list (length questions)
