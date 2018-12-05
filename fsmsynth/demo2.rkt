@@ -3,7 +3,8 @@
 (require
   "lang.rkt"
   "lang2.rkt"
-  ; "hole2.rkt"
+  "hole2.rkt"
+  rosette/lib/synthax
   rosette/lib/angelic
   )
 
@@ -42,12 +43,42 @@
     )
   )
 
+; (define (t in m) (??transition sentences in m))
 (define prog
   (program
     numinputs
     (list
-      (xsfold (r 0) transition (model 'monologue  (variables 0) (create-outputs)))
+      (xsfold (r 0) transition (model 'monologue (variables 0) (create-outputs)))
       )))
 
 (displayln "Program evaluation:")
 (program-interpret prog test-inputs)
+
+
+
+(define sym-inputs
+  (list
+    (for/list ([i inputsize])
+      (choose* (input 'speechsynth-done '()) '()))
+    ))
+
+(displayln "")
+(displayln "")
+(define (t in m) (??transition sentences in m))
+(define M
+  (synthesize
+    #:forall (symbolics sym-inputs)
+    #:guarantee (assert (equal?
+      (program-interpret prog sym-inputs)
+      (program-interpret (program
+        numinputs
+        (list
+          (xsfold (r 0) t (model 'monologue  (variables 0) (create-outputs)))
+          )) sym-inputs)
+      )))
+  )
+
+(printf "~%Program synthesis:~%")
+(if (sat? M)
+  M ; (print-forms M)  ; (evaluate sketch M)
+  (displayln "No program found"))

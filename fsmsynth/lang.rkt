@@ -68,7 +68,6 @@
     [(xsfold? op)
       (define f (binoperator-arg1 op))
       (define s (binoperator-arg2 op))
-
       (define (fold lst acc)
         (cond
           [(empty? lst) '()]
