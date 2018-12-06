@@ -72,7 +72,7 @@
 (displayln "")
 
 (define numinputs 1)
-(define inputsize 10)
+(define inputsize 8)
 
 (define sym-inputs
   (list
@@ -90,20 +90,28 @@
     )))
 
 (define ??trans-tbl (??transition-table monologues questions))
+(define ??trans2-tbl (??qa-transition-table questions answers monologues))
+??trans2-tbl
 (define (??trans in m)
   (??transition
     in m
-    ??trans-tbl
-    (list  ; Q&A trans-tbl
-      (list  ; Q0,
-        (cons 'monologue 0)  ; A0
-        (cons 'question 1) ; A1
+    ; ??trans-tbl
+    (list  ; Monologue trans-tbl
+      (cons 'monologue 0)  ; M1
+      (cons 'monologue 1)
+      (cons 'monologue 2)
       )
-      (list  ; Q1,
-        (cons 'monologue 1)  ; A0
-        (cons 'monologue 2) ; A1
-      )
-      )
+    ; (list  ; Q&A trans-tbl
+    ;   (list  ; Q0,
+    ;     (cons 'monologue 0)  ; A0
+    ;     (cons 'question 1) ; A1
+    ;   )
+    ;   (list  ; Q1,
+    ;     (cons 'monologue 1)  ; A0
+    ;     (cons 'monologue 2) ; A1
+    ;   )
+    ;   )
+    ??trans2-tbl
     monologues
     questions
     answers
@@ -117,13 +125,13 @@
       (program-interpret (program
         numinputs
         (list
-          (xsfold (r 0) trans (model 'monologue (variables 0) (create-outputs)))
+          (xsfold (r 0) trans (model 'question (variables 0) (create-outputs (list-ref questions 0))))
           )) sym-inputs)
       ; sketch
       (program-interpret (program
         numinputs
         (list
-          (xsfold (r 0) ??trans (model 'monologue  (variables 0) (create-outputs)))
+          (xsfold (r 0) ??trans (model 'question (variables 0) (create-outputs (list-ref questions 0))))
           )) sym-inputs)
       )))
   )
@@ -132,5 +140,5 @@
 (if (sat? M)
   ; M
   ; (print-forms M)
-  (evaluate ??trans-tbl M)  ; result has symbolic variables, this is because monologue happens at the end and doesn't really matter what happens afterwards
+  (evaluate ??trans2-tbl M)  ; result has symbolic variables, this is because monologue happens at the end and doesn't really matter what happens afterwards
   (displayln "No program found"))

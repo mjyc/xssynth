@@ -20,15 +20,33 @@
         ; (cons 'instruction (??speech-index instructions))
         ))))
 
-; (define (??answer-transition-table questions answers monologues)
-;   (build-list (length questions)
-;     (build-list (length answers)
-;     (lambda (x)
-;       (choose*
-;         (cons 'monologue (cons #f (??speech-index monologues)))
-;         (cons 'question (cons #f (??speech-index questions)))
-;         ; (cons 'instruction (??speech-index instructions))
-;         ))))
+(define (??qa-transition-table questions answers monologues)
+  (list  ; Q&A trans-tbl
+      (list  ; Q0,
+        (cons 'monologue 0)  ; A0
+        (cons 'question 1) ; A1
+      )
+      ; (list  ; Q0,
+      ;   (build-list (length answers) (lambda (x)
+      ;     (choose*
+      ;       (cons 'monologue (??speech-index monologues))
+      ;       (cons 'question (??speech-index questions))
+      ;       ; (cons 'instruction (??speech-index instructions))
+      ;       )))
+      ; )
+      (list  ; Q1,
+        (cons 'monologue 1)  ; A0
+        (cons 'monologue 2) ; A1
+      )
+      )
+  ; (build-list (length questions) (lambda (y)
+  ;   (build-list (length answers) (lambda (x)
+  ;     (choose*
+  ;       (cons 'monologue (??speech-index monologues))
+  ;       (cons 'question (??speech-index questions))
+  ;       ; (cons 'instruction (??speech-index instructions))
+  ;       )))))
+  )
 
 (define (??transition in m
                       monologue-transition-table
