@@ -1,4 +1,4 @@
-#lang rosette/safe
+#lang rosette
 
 (require "lang.rkt")
 
@@ -7,91 +7,64 @@
 (define ERROR 'error)
 (define COMPLETE 'complete)
 (define EMPTY 'empty)
+(define (EMPTY? x) (equal? x 'empty))
 
 
-(struct srsm (S S0 Sf Sr V V0 SIG LAM) #:transparent)
+(struct V (m) #:transparent)  ; TODO: add  '(q a i)
+(struct T (w m) #:transparent)  ; TODO: add  '(q qa i)
+
+(struct srsm (S S0 Sf V V0 SIG ; LAM
+  T) #:transparent)
 
 
-; S x I
-(define (srsm-step srsm s var in)
-  ; (define )
-  (cond
-    ; [(eqv? s ERROR) '()]
-    ; [(eqv? s COMPLETE) '()]
-    [(equal? s 'monologue)
-      (car (list-ref m-trans-tbl var))  ; next state
-      (car (list-ref m-trans-tbl var))  ; next var
-      (list s var out)
-    ]
-    [(empty? inputs) #f]
-    ; [else
-    ;   (struct rsm '() #:transparent)
-    ;   (define result ((automaton-transition machine) state (first inputs)))
-    ;   (if (empty? result)
-    ;     #f
-    ;     (step (first result) (rest inputs) (cons (second result) outputs))
-    ;     )]
-    ; )
+(define SELF_TRANSITION (cons EMPTY -1))
+(define REJECT_TRANSITION (cons ERROR -1))
+
+(define default-states
+  (list 'monologue 'question 'answer ERROR))  ; ERROR for rejection state
+(define default-inputs
+  (list 'start 'speechsynth-done EMPTY))  ; EMPTY for no event
+
+
+(define (answers->inputs answers)
+  (for/list ([answer answers])
+    (string-join (list "speechrecog-done" "-" answer) ""))
   )
 
+(define (svar-replace-consts prev-svar svar)
+  (cond
+    [(equal? prev-svar SELF_TRANSITION) svar]  ; TODO factor out
+    [(equal? prev-svar REJECT_TRANSITION) '()]
+    [else svar]))
 
-; TODO: "create output set" (let me just start with this now)
-; input param sentences
-; 'speak-s1...sn
-; 'listen&speak-s1...sn
-
-; TODO: "enhance default-states"
-; add custom start, end, reject
-
-; TODO: "create input done form "answers"
-
-
-; (define (srsm-run srsm inputs))
-
-; (define default-states
-;   (list 'monologue 'question 'answer COMPLETE ERROR))
-
-; (define default-inputs
-;   (list 'speechsynth-done EMPTY))
-
-
-
-; step: S x V x  -> S x V x O
-
-
-
-(list-ref S 1)
-
-
-
-(define (same trans1 trans2 states variables outputs inputs)
-  ; create two srsms
-  ; run them and
-  ;   compare whether one of them CRASHED or not
-  ;   compare whether one of them COMPLETED or not
-  ;   otherwise, I could compare many things at this point.
-  ;   e.g., just compare outputs, or more
-  ;   make things super contrained and see what I can synthesize
-  (for ([i lenght])
-    (inputs)
+(define (srsm-step m s var in)
+  (cond
+    [(and (equal? s 'wait) (equal? in 'start))
+      (define trans (T-w (srsm-T m)))
+      (define input-idx (index-of (srsm-SIG m) in))
+      (svar-replace-consts (list-ref trans input-idx) (cons s var))
+      ]
+    [else
+      (printf "Undefined transition s ~s var ~a in ~a~%" s var in)
+      (cons s var)]
     )
   )
 
+(define (srsm-run m ins)
+  (define s0 (srsm-S0 m))
+  (define v0 (srsm-V0 m))
 
-
-(define (fsm-run machine input-stream)
-  (define (step state inputs outputs)
+  (define (fold acc lst)
     (cond
-      [(eqv? state S_NONE) #f]
-      [(eqv? state (automaton-final-state machine))
-       (if (empty? inputs) (reverse outputs) #f)]
-      [(empty? inputs) #f]
+      [(empty? lst) '()]
       [else
-        (define result ((automaton-transition machine) state (first inputs)))
-        (if (empty? result)
-          #f
-          (step (first result) (rest inputs) (cons (second result) outputs))
-          )]
-      ))
-  (step (automaton-cur-state machine) input-stream empty)
+        (define x (first lst))
+        (define v
+          (if (EMPTY? x) acc (srsm-step m (car acc) (cdr acc) x)))
+        (displayln v)
+        (cons v (fold v (rest lst)))
+        ]
+      )
+    )
+  (fold (cons s0 v0) ins)
   )
