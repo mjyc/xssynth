@@ -8,7 +8,7 @@
 
 ; Define SRSM
 
-(define states (append '(pend) default-states (list COMPLETE)))
+(define states (append '(wait) default-states (list COMPLETE)))
 (define init-state (list-ref states 0))  ; 'monologue
 (define final-state COMPLETE)  ; 'complete
 

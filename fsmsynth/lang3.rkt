@@ -33,16 +33,21 @@
 
 (define (svar-replace-consts prev-svar svar)
   (cond
-    [(equal? prev-svar SELF_TRANSITION) svar]  ; TODO factor out
-    [(equal? prev-svar REJECT_TRANSITION) '()]
+    [(equal? svar SELF_TRANSITION) prev-svar]  ; TODO factor out
+    [(equal? svar REJECT_TRANSITION) '()]
     [else svar]))
 
 (define (srsm-step m s var in)
+  (printf "Start s ~s var ~a in ~a~%" s var in)
   (cond
     [(and (equal? s 'wait) (equal? in 'start))
       (define trans (T-w (srsm-T m)))
       (define input-idx (index-of (srsm-SIG m) in))
-      (svar-replace-consts (list-ref trans input-idx) (cons s var))
+      (svar-replace-consts (cons s var) (list-ref trans input-idx))
+      ]
+    [(and (equal? s 'monologue) (equal? in 'speechsynth-done))
+      (define trans (T-m (srsm-T m)))
+      (svar-replace-consts (list-ref trans var) (cons s var))
       ]
     [else
       (printf "Undefined transition s ~s var ~a in ~a~%" s var in)
