@@ -70,17 +70,24 @@
   (define s0 (srsm-S0 m))
   (define v0 (srsm-V0 m))
 
-  (define (fold acc lst)
+  (define (fold f acc lst)
     (cond
       [(empty? lst) '()]
       [else
         (define x (first lst))
-        (define v
-          (if (EMPTY? x) acc (srsm-step m (first acc) (second acc) x)))
-        (displayln v)
-        (cons v (fold v (rest lst)))
+        (define v (f x acc))
+        (cond
+          [(equal? (first v) ERROR) #f]
+          [(equal? (first v) COMPLETE) (list v)]
+          [else
+            (cons v (fold f v (rest lst)))]
+          )
         ]
       )
     )
-  (fold (list s0 v0 EMPTY) ins)
-  )
+  (fold
+    (lambda (x acc)
+      (if (EMPTY? x) acc (srsm-step m (first acc) (second acc) x)))
+    (list s0 v0 EMPTY)
+    ins))
+
