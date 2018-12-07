@@ -37,6 +37,13 @@
     [(equal? svar REJECT_TRANSITION) '()]
     [else svar]))
 
+(define (srsm-get-output m s var)
+  (cond
+    [(equal? s 'monologue)
+      (list-ref (V-m (srsm-V m)) var)]
+    [else
+      EMPTY]))
+
 (define (srsm-step m s var in)
   (printf "Start s ~s var ~a in ~a~%" s var in)
   (cond
@@ -45,13 +52,13 @@
       (define input-idx (index-of (srsm-SIG m) in))
       (define svar
         (svar-replace-consts (cons s var) (list-ref trans input-idx)))
-      (list (car svar) (cdr svar) EMPTY)
+      (list (car svar) (cdr svar) (srsm-get-output m (car svar) (cdr svar)))
       ]
     [(and (equal? s 'monologue) (equal? in 'speechsynth-done))
       (define trans (T-m (srsm-T m)))
       (define svar
-        (svar-replace-consts (list-ref trans var) (cons s var)))
-      (list (car svar) (cdr svar) EMPTY (list-ref (V-m (srsm-V m)) var))
+        (svar-replace-consts (cons s var) (list-ref trans var)))
+      (list (car svar) (cdr svar) (srsm-get-output m (car svar) (cdr svar)))
       ]
     [else
       (printf "Undefined transition s ~s var ~a in ~a~%" s var in)
@@ -75,5 +82,5 @@
         ]
       )
     )
-  (fold (cons s0 v0) ins)
+  (fold (list s0 v0 EMPTY) ins)
   )

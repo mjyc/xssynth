@@ -29,7 +29,7 @@
   (list
     (cons 'monologue 1)
     (cons 'monologue 2)
-    (cons 'complete 2)
+    (cons 'complete -1)
     )
   ))
 
@@ -54,4 +54,4 @@ fsm
 (displayln "srsm-step:")
 ; (srsm-step fsm 'wait 0 'speechsynth-done)
 ; (srsm-step fsm 'monologue 0 'speechsynth-done)
-(srsm-run fsm '(start speechsynth-done speechsynth-done))
+(srsm-run fsm '(start speechsynth-done speechsynth-done speechsynth-done))
