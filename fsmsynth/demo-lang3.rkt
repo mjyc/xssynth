@@ -61,8 +61,11 @@ fsm
 ; (displayln "srsm-step:")
 ; (srsm-step fsm 'wait 0 'speechsynth-done)
 ; (srsm-step fsm 'monologue 0 'speechsynth-done)
-(define test-ins '(start speechsynth-done speechsynth-done speechsynth-done))
-(displayln "srsm-run:")
+(define test-ins
+  '(start speechsynth-done start speechsynth-done speechsynth-done speechsynth-done)
+  ; '(start start start start speechsynth-done speechsynth-done)
+  )
+(displayln "Program execution:")
 (srsm-run fsm test-ins)
 
 
@@ -96,6 +99,7 @@ fsm
     (cons 'complete -1)
     )
   ))
+; ??trans
 
 
 (define M (solve
@@ -109,12 +113,14 @@ fsm
   variable
   init-variable
   inputs
-  '(start speechsynth-done speechsynth-done speechsynth-done)))))
+  test-ins))))
 
 (displayln "Angelic execution")
 (if (sat? M)
-  ; M
-  (print-forms M)
+  (begin
+    (displayln M)
+    (print-forms M)
+    )
   ; (evaluate ??trans-tbl M)
   (displayln "No program found"))
 
@@ -126,8 +132,8 @@ fsm
 (displayln "")
 (displayln "")
 
-(define inputsize 3)  ; 4 doesn't work
-(define sym-inputs
+(define inputsize 8)
+(define sym-ins
   (for/list ([i inputsize])
     (apply choose* '(start speechsynth-done)))
   )
@@ -135,21 +141,57 @@ fsm
 
 (define M2
   (synthesize
-    #:forall (symbolics sym-inputs)
-    #:guarantee (same transition
-  ??trans
-  states
-  init-state
-  final-state
-  reject-state
-  variable
-  init-variable
-  inputs
-  (cons 'start sym-inputs))))
+    #:forall (symbolics sym-ins)
+    #:guarantee (same transition ??trans
+      states init-state final-state reject-state variable init-variable inputs
+      (cons 'start (append sym-ins)))))
 
-(displayln "Program synthesis")
+(displayln "Program synthesis")  ; PROBLEM! the synthesizer finds a result that does not make sense!
 (if (sat? M2)
-  ; M2
-  (print-forms M2)  ; splits weird outputs!
-  ; (evaluate ??trans-tbl M2)
+  (begin
+    (printf "M2 ~a~%" M2)
+    (print-forms M2)  ; splits weird outputs!
+    )
   (displayln "No program found"))
+
+
+; ------------------------------------------------------------------------------
+; Try verification
+
+(displayln "")
+(displayln "")
+
+(define cex (verify
+  (assert
+    (same
+      transition
+      (T
+        (list
+          (cons 'monologue 0) ; 'start
+          (cons EMPTY -1) ; 'speechsynth-done
+          (cons EMPTY -1) ; ?
+          )
+        (list
+          (cons 'monologue 1)
+          (cons 'complete 2)
+          (cons 'complete -1)
+          )
+        )
+      states
+      init-state
+      final-state
+      reject-state
+      variable
+      init-variable
+      inputs
+      (cons 'start (append sym-ins))))
+  ))
+
+(printf "~%Verification~%")
+cex
+(if (sat? cex)
+  ; cex
+  (begin
+    (print-forms cex)
+    (evaluate sym-ins cex))
+  (displayln "No counterexample found"))

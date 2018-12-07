@@ -39,18 +39,18 @@
       'empty]))
 
 
-(define-lift lifted-index-of
+(define-lift lifted-index-of-sym
   [(list? symbol?) index-of])
 
+(define-lift lifted-index-of-bool
+  [(list? boolean?) index-of])
+
 (define (srsm-step m prev-s prev-var in)
-  (printf "Start s ~s var ~a in ~a~%" prev-s prev-var in)
+  ; (printf "srsm-step s ~s var ~a in ~a~%" prev-s prev-var in)
   (cond
     [(and (equal? prev-s 'wait) (equal? in 'start))
-      (printf "wait transition s ~s var ~a in ~a~%" prev-s prev-var in)
       (define trans (T-w (srsm-T m)))
-      ; (define input-idx (index-of (srsm-SIG m) in))
-      ; (define input-idx 0)
-      (define input-idx (lifted-index-of (srsm-SIG m) in))
+      (define input-idx (lifted-index-of-sym (srsm-SIG m) in))
       (define s (s-replace-empty (car (list-ref trans input-idx)) prev-s))
       (define var (cdr (list-ref trans input-idx)))
       (list s var (srsm-get-output m s var))
@@ -62,12 +62,9 @@
       (list s var (srsm-get-output m s var))
       ]
     [else
-      (printf "Undefined transition s ~s var ~a in ~a~%" prev-s prev-var in)
-      ; (list prev-s prev-var EMPTY)
-      (list 'error -1 EMPTY)
-      ]
-    )
-  )
+      ; (printf "Undefined transition s ~s var ~a in ~a~%" prev-s prev-var in)
+      (list prev-s prev-var EMPTY)
+      ]))
 
 (define (srsm-run m ins)
   (define s0 (srsm-S0 m))
@@ -80,17 +77,20 @@
         (define x (first lst))
         (define v (f x acc))
         (cond
-          [(equal? (first v) (srsm-Sr m)) #f]
-          [(equal? (first v) (srsm-Sf m)) (list v)]
+          [(equal? (first v) (srsm-Sr m)) (list #f)]
+          [(equal? (first v) (srsm-Sf m)) (list (srsm-Sf m))]
           [else
             (cons v (fold f v (rest lst)))]
           )
         ]))
-  (fold
-    (lambda (x acc)
-      (if (equal? x 'empty) acc (srsm-step m (first acc) (second acc) x)))
-    (list s0 v0 EMPTY)
-    ins))
+  (define result (fold
+      (lambda (x acc)
+        (if (equal? x 'empty) acc (srsm-step m (first acc) (second acc) x)))
+      (list s0 v0 EMPTY)
+      ins))
+  result
+  ; (if (lifted-index-of-bool result #f) #f result)
+  )
 
 
 (define (same t1 t2 s s0 sf sr v v0 sig ins)
@@ -98,3 +98,9 @@
   (define m2 (srsm s s0 sf sr v v0 sig t2))
 
   (equal? (srsm-run m1 ins) (srsm-run m2 ins)))
+  ; (define r1 (srsm-run m1 ins))
+  ; (define r2 (srsm-run m2 ins))
+  ; (and r1
+  ;   (and r2
+  ;     (equal? r1 r2)
+  ;     )))
