@@ -4,8 +4,6 @@
 
 (provide (all-defined-out))
 
-(define ERROR 'error)
-(define COMPLETE 'complete)
 (define EMPTY 'empty)
 (define (EMPTY? x) (equal? x 'empty))
 
@@ -13,17 +11,16 @@
 (struct V (m) #:transparent)  ; TODO: add  '(q a i)
 (struct T (w m) #:transparent)  ; TODO: add  '(q qa i)
 
-(struct srsm (S S0 Sf V V0 SIG ; LAM
+(struct srsm (S S0 Sf Sr V V0 SIG ; LAM
   T) #:transparent)
 
 
-(define SELF_TRANSITION (cons EMPTY -1))
-(define REJECT_TRANSITION (cons ERROR -1))
-
 (define default-states
-  (list 'monologue 'question 'answer ERROR))  ; ERROR for rejection state
+  (list 'monologue 'question 'answer))
 (define default-inputs
   (list 'start 'speechsynth-done EMPTY))  ; EMPTY for no event
+(define default-outputs
+  (list EMPTY))  ; EMPTY for no output
 
 
 (define (answers->inputs answers)
@@ -33,8 +30,8 @@
 
 (define (svar-replace-consts prev-svar svar)
   (cond
-    [(equal? svar SELF_TRANSITION) prev-svar]  ; TODO factor out
-    [(equal? svar REJECT_TRANSITION) '()]
+    [(equal? svar (cons 'empty -1)) prev-svar]  ; TODO factor out
+    [(equal? svar (cons 'error -1)) '()]
     [else svar]))
 
 (define (srsm-get-output m s var)
@@ -42,7 +39,7 @@
     [(equal? s 'monologue)
       (list-ref (V-m (srsm-V m)) var)]
     [else
-      EMPTY]))
+      'empty]))
 
 (define (srsm-step m prev-s prev-var in)
   (printf "Start s ~s var ~a in ~a~%" prev-s prev-var in)
@@ -77,8 +74,8 @@
         (define x (first lst))
         (define v (f x acc))
         (cond
-          [(equal? (first v) ERROR) #f]
-          [(equal? (first v) COMPLETE) (list v)]
+          [(equal? (first v) 'error) #f]
+          [(equal? (first v) 'complete) (list v)]
           [else
             (cons v (fold f v (rest lst)))]
           )
@@ -87,7 +84,7 @@
     )
   (fold
     (lambda (x acc)
-      (if (EMPTY? x) acc (srsm-step m (first acc) (second acc) x)))
+      (if (equal? x 'empty) acc (srsm-step m (first acc) (second acc) x)))
     (list s0 v0 EMPTY)
     ins))
 

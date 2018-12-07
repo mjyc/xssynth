@@ -8,14 +8,17 @@
 
 ; Define SRSM
 
-(define states (append '(wait) default-states (list COMPLETE)))
-(define init-state (list-ref states 0))  ; 'monologue
-(define final-state COMPLETE)  ; 'complete
+(define init-state 'wait)
+(define final-state 'complete)
+(define reject-state 'error)
+(define states
+  (append default-states
+    (list init-state final-state reject-state)))
 
-(define variable (V
-  (list "Hello" "World" "Yay!")  ; monologues
-  ))  ; add questions and answers
-; (define init-variable (v (list-ref (v-m variable) 0)))
+(define variable
+  (V
+    (list "Hello" "World" "Yay!")  ; monologues
+    ))  ; TODO: add questions and answers
 (define init-variable 0)
 
 (define inputs default-inputs)
@@ -23,8 +26,8 @@
 (define transition (T
   (list
     (cons 'monologue 0) ; 'start
-    SELF_TRANSITION ; 'speechsynth-done
-    SELF_TRANSITION ; 'empty
+    (cons EMPTY -1) ; 'speechsynth-done
+    (cons EMPTY -1) ; ?
     )
   (list
     (cons 'monologue 1)
@@ -39,6 +42,7 @@
     states
     init-state
     final-state
+    reject-state
     variable
     init-variable
     inputs
