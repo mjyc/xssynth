@@ -43,15 +43,19 @@
     [(and (equal? s 'wait) (equal? in 'start))
       (define trans (T-w (srsm-T m)))
       (define input-idx (index-of (srsm-SIG m) in))
-      (svar-replace-consts (cons s var) (list-ref trans input-idx))
+      (define svar
+        (svar-replace-consts (cons s var) (list-ref trans input-idx)))
+      (list (car svar) (cdr svar) EMPTY)
       ]
     [(and (equal? s 'monologue) (equal? in 'speechsynth-done))
       (define trans (T-m (srsm-T m)))
-      (svar-replace-consts (list-ref trans var) (cons s var))
+      (define svar
+        (svar-replace-consts (list-ref trans var) (cons s var)))
+      (list (car svar) (cdr svar) EMPTY (list-ref (V-m (srsm-V m)) var))
       ]
     [else
       (printf "Undefined transition s ~s var ~a in ~a~%" s var in)
-      (cons s var)]
+      (list s var EMPTY)]
     )
   )
 
@@ -65,7 +69,7 @@
       [else
         (define x (first lst))
         (define v
-          (if (EMPTY? x) acc (srsm-step m (car acc) (cdr acc) x)))
+          (if (EMPTY? x) acc (srsm-step m (first acc) (second acc) x)))
         (displayln v)
         (cons v (fold v (rest lst)))
         ]
