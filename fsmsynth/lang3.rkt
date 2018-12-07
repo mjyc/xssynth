@@ -33,7 +33,7 @@
     [(equal? s 'monologue)
       (list-ref (V-m (srsm-V m)) var)]
     [else
-      'empty]))
+      EMPTY]))
 
 
 (define (srsm-step m prev-s prev-var in)
@@ -51,9 +51,9 @@
       (define var (cdr (list-ref trans prev-var)))
       (list s var (srsm-get-output m s var))
       ]
-    [(and (equal? prev-s 'question) (equal? in 'speechsynth-done))
-      (list 'answer prev-var 'listen)
-      ]
+    ; [(and (equal? prev-s 'question) (equal? in 'speechsynth-done))
+    ;   (list 'answer prev-var 'listen)
+    ;   ]
     ; [(and (equal? prev-s 'anwer) (equal? in 'speechrecog-done))
     ;   (define trans (T-qa (srsm-T m)))
     ;   (define s (car (list-ref trans prev-var)))
@@ -82,17 +82,15 @@
             (cons v (fold f v (rest lst)))]
           )
         ]))
-  (define result (fold
-      (lambda (x acc)
-        (if (equal? x 'empty) acc (srsm-step m (first acc) (second acc) x)))
-      (list s0 v0 EMPTY)
-      ins))
-  result
-  )
+  (fold
+    (lambda (x acc)
+      (if (EMPTY? x) acc (srsm-step m (first acc) (second acc) x)))
+    (list s0 v0 EMPTY)
+    ins))
 
 
-(define (same t1 t2 s s0 sf sr v v0 sig ins)
-  (define m1 (srsm s s0 sf sr v v0 sig t1))
-  (define m2 (srsm s s0 sf sr v v0 sig t2))
+(define (same t1 t2 s s0 sf v v0 sig ins)
+  (define m1 (srsm s s0 sf v v0 sig t1))
+  (define m2 (srsm s s0 sf v v0 sig t2))
 
   (equal? (srsm-run m1 ins) (srsm-run m2 ins)))
