@@ -10,10 +10,9 @@
 
 (define init-state 'wait)
 (define final-state 'complete)
-(define reject-state 'error)
 (define states
   (append default-states
-    (list init-state final-state reject-state)))
+    (list init-state final-state)))
 
 (define variable
   (V
@@ -25,9 +24,7 @@
 
 (define transition (T
   (list
-    (cons 'monologue 0) ; 'start
-    (cons EMPTY -1) ; 'speechsynth-done
-    (cons EMPTY -1) ; ?
+    (cons 'monologue 0)
     )
   (list
     (cons 'monologue 1)
@@ -42,7 +39,6 @@
     states
     init-state
     final-state
-    reject-state
     variable
     init-variable
     inputs
@@ -81,7 +77,6 @@ fsm
 ;   states
 ;   init-state
 ;   final-state
-;   reject-state
 ;   variable
 ;   init-variable
 ;   inputs
@@ -90,12 +85,12 @@ fsm
 (define ??trans (T
   (list
     (cons 'monologue 0) ; 'start
-    (cons EMPTY -1) ; 'speechsynth-done
-    (cons EMPTY -1) ; ?
+    (cons 'wait 1) ; 'speechsynth-done
+    (cons 'wait 2) ; ?
     )
   (list
-    (cons (choose 'wait 'monologue 'complete 'error) 1)
-    (cons (choose 'wait 'monologue 'complete 'error) 2)
+    (cons (choose 'wait 'monologue 'complete) 1)
+    (cons (choose 'wait 'monologue 'complete) 2)
     (cons 'complete -1)
     )
   ))
@@ -109,7 +104,6 @@ fsm
   states
   init-state
   final-state
-  reject-state
   variable
   init-variable
   inputs
@@ -143,7 +137,7 @@ fsm
   (synthesize
     #:forall (symbolics sym-ins)
     #:guarantee (same transition ??trans
-      states init-state final-state reject-state variable init-variable inputs
+      states init-state final-state variable init-variable inputs
       (cons 'start (append sym-ins)))))
 
 (displayln "Program synthesis")  ; PROBLEM! the synthesizer finds a result that does not make sense!
@@ -168,19 +162,18 @@ fsm
       (T
         (list
           (cons 'monologue 0) ; 'start
-          (cons EMPTY -1) ; 'speechsynth-done
-          (cons EMPTY -1) ; ?
+          (cons 'wait 1) ; 'speechsynth-done
+          (cons 'wait 2) ; ?
           )
         (list
           (cons 'monologue 1)
-          (cons 'complete 2)
+          (cons 'monologue 2)
           (cons 'complete -1)
           )
         )
       states
       init-state
       final-state
-      reject-state
       variable
       init-variable
       inputs
