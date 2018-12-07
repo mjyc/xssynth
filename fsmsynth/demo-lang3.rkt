@@ -57,8 +57,8 @@
 ; (srsm-step fsm 'wait 0 'speechsynth-done)
 ; (srsm-step fsm 'monologue 0 'speechsynth-done)
 (define test-ins
-  ; '(start speechsynth-done start speechsynth-done speechsynth-done speechsynth-done)
-  '(speechsynth-done start start start start speechsynth-done speechsynth-done)
+  '(start speechsynth-done start speechsynth-done speechsynth-done speechsynth-done)
+  ; '(speechsynth-done start start start start speechsynth-done speechsynth-done)
   )
 (displayln "Program execution:")
 (srsm-run fsm test-ins)
@@ -134,8 +134,8 @@
       variable
       init-variable
       inputs
-      ; sym-ins))) ; PROBLEM! this doesn't work!!!
-      (cons 'start sym-ins))))
+      sym-ins))) ; PROBLEM! this doesn't work!!!
+      ; (cons 'start sym-ins))))
 
 (displayln "Program synthesis")
 (if (sat? M2)
