@@ -1,6 +1,6 @@
 #lang rosette
 
-(require "lang.rkt")
+(require "lang.rkt" rosette/lib/lift)
 
 (provide (all-defined-out))
 
@@ -11,7 +11,7 @@
 (struct V (m) #:transparent)  ; TODO: add  '(q a i)
 (struct T (w m) #:transparent)  ; TODO: add  '(q qa i)
 
-(struct srsm (S S0 Sf Sr V V0 SIG ; LAM
+(struct srsm (S S0 Sf Sr V V0 SIG ; LAM  ; TODO: add  LAM
   T) #:transparent)
 
 
@@ -28,11 +28,8 @@
     (string-join (list "speechrecog-done" "-" answer) ""))
   )
 
-(define (svar-replace-consts prev-svar svar)
-  (cond
-    [(equal? svar (cons 'empty -1)) prev-svar]  ; TODO factor out
-    [(equal? svar (cons 'error -1)) '()]
-    [else svar]))
+(define (s-replace-empty s prev-s)
+  (if (EMPTY? s) prev-s s))
 
 (define (srsm-get-output m s var)
   (cond
@@ -41,25 +38,34 @@
     [else
       'empty]))
 
+
+(define-lift lifted-index-of
+  [(list? symbol?) index-of])
+
 (define (srsm-step m prev-s prev-var in)
   (printf "Start s ~s var ~a in ~a~%" prev-s prev-var in)
   (cond
     [(and (equal? prev-s 'wait) (equal? in 'start))
+      (printf "wait transition s ~s var ~a in ~a~%" prev-s prev-var in)
       (define trans (T-w (srsm-T m)))
-      (define input-idx (index-of (srsm-SIG m) in))
-      (define svar
-        (svar-replace-consts (cons prev-s prev-var) (list-ref trans input-idx)))
-      (list (car svar) (cdr svar) (srsm-get-output m (car svar) (cdr svar)))
+      ; (define input-idx (index-of (srsm-SIG m) in))
+      ; (define input-idx 0)
+      (define input-idx (lifted-index-of (srsm-SIG m) in))
+      (define s (s-replace-empty (car (list-ref trans input-idx)) prev-s))
+      (define var (cdr (list-ref trans input-idx)))
+      (list s var (srsm-get-output m s var))
       ]
     [(and (equal? prev-s 'monologue) (equal? in 'speechsynth-done))
       (define trans (T-m (srsm-T m)))
-      (define svar
-        (svar-replace-consts (cons prev-s prev-var) (list-ref trans prev-var)))
-      (list (car svar) (cdr svar) (srsm-get-output m (car svar) (cdr svar)))
+      (define s (s-replace-empty (car (list-ref trans prev-var)) prev-s))
+      (define var (cdr (list-ref trans prev-var)))
+      (list s var (srsm-get-output m s var))
       ]
     [else
       (printf "Undefined transition s ~s var ~a in ~a~%" prev-s prev-var in)
-      (list prev-s prev-var EMPTY)]
+      ; (list prev-s prev-var EMPTY)
+      (list 'error -1 EMPTY)
+      ]
     )
   )
 
@@ -74,17 +80,21 @@
         (define x (first lst))
         (define v (f x acc))
         (cond
-          [(equal? (first v) 'error) #f]
-          [(equal? (first v) 'complete) (list v)]
+          [(equal? (first v) (srsm-Sr m)) #f]
+          [(equal? (first v) (srsm-Sf m)) (list v)]
           [else
             (cons v (fold f v (rest lst)))]
           )
-        ]
-      )
-    )
+        ]))
   (fold
     (lambda (x acc)
       (if (equal? x 'empty) acc (srsm-step m (first acc) (second acc) x)))
     (list s0 v0 EMPTY)
     ins))
 
+
+(define (same t1 t2 s s0 sf sr v v0 sig ins)
+  (define m1 (srsm s s0 sf sr v v0 sig t1))
+  (define m2 (srsm s s0 sf sr v v0 sig t2))
+
+  (equal? (srsm-run m1 ins) (srsm-run m2 ins)))
