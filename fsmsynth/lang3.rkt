@@ -51,6 +51,15 @@
       (define var (cdr (list-ref trans prev-var)))
       (list s var (srsm-get-output m s var))
       ]
+    [(and (equal? prev-s 'question) (equal? in 'speechsynth-done))
+      (list 'answer prev-var 'listen)
+      ]
+    ; [(and (equal? prev-s 'anwer) (equal? in 'speechrecog-done))
+    ;   (define trans (T-qa (srsm-T m)))
+    ;   (define s (car (list-ref trans prev-var)))
+    ;   (define var (cdr (list-ref trans prev-var)))
+    ;   (list s var (srsm-get-output m s var))
+    ;   ]
     [else
       ; (printf "Undefined transition s ~s var ~a in ~a~%" prev-s prev-var in)
       (list prev-s prev-var EMPTY)
