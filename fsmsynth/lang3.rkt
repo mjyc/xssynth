@@ -44,25 +44,25 @@
     [else
       EMPTY]))
 
-(define (srsm-step m s var in)
-  (printf "Start s ~s var ~a in ~a~%" s var in)
+(define (srsm-step m prev-s prev-var in)
+  (printf "Start s ~s var ~a in ~a~%" prev-s prev-var in)
   (cond
-    [(and (equal? s 'wait) (equal? in 'start))
+    [(and (equal? prev-s 'wait) (equal? in 'start))
       (define trans (T-w (srsm-T m)))
       (define input-idx (index-of (srsm-SIG m) in))
       (define svar
-        (svar-replace-consts (cons s var) (list-ref trans input-idx)))
+        (svar-replace-consts (cons prev-s prev-var) (list-ref trans input-idx)))
       (list (car svar) (cdr svar) (srsm-get-output m (car svar) (cdr svar)))
       ]
-    [(and (equal? s 'monologue) (equal? in 'speechsynth-done))
+    [(and (equal? prev-s 'monologue) (equal? in 'speechsynth-done))
       (define trans (T-m (srsm-T m)))
       (define svar
-        (svar-replace-consts (cons s var) (list-ref trans var)))
+        (svar-replace-consts (cons prev-s prev-var) (list-ref trans prev-var)))
       (list (car svar) (cdr svar) (srsm-get-output m (car svar) (cdr svar)))
       ]
     [else
-      (printf "Undefined transition s ~s var ~a in ~a~%" s var in)
-      (list s var EMPTY)]
+      (printf "Undefined transition s ~s var ~a in ~a~%" prev-s prev-var in)
+      (list prev-s prev-var EMPTY)]
     )
   )
 
