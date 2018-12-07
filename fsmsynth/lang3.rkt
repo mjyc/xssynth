@@ -76,8 +76,8 @@
         (define x (first lst))
         (define v (f x acc))
         (cond
-          [(equal? (first v) (srsm-Sf m))
-            (list (list (srsm-Sf m) -1 EMPTY))]
+          ; [(equal? (first v) (srsm-Sf m))
+          ;   (list (list (srsm-Sf m) -1 EMPTY))]  ; DOESN'T WORK!, also ERROR case handling didn't work too. lifted "equal?" might not be able to handle arrow with different lengths properly
           [else
             (cons v (fold f v (rest lst)))]
           )
