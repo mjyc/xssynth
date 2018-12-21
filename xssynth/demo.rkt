@@ -1,6 +1,7 @@
-#lang rosette
+#lang rosette/safe
 
 (require
+  (only-in racket build-list for/list empty)
   "lang.rkt"
   "hole.rkt"
   )
