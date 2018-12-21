@@ -1,11 +1,7 @@
-#lang rosette
+#lang rosette/safe
 
 (require
-  ; (rename-in
-  ;   (only-in rosette/query/debug define/debug)
-  ;   [define/debug define]
-  ;   )
-  )
+  (only-in racket empty error))
 
 (provide (all-defined-out))
 
@@ -35,7 +31,7 @@
 
 (define (r-interpret v reg)
   (if (r? v)  ; otherwise, assumes it's events
-    (vector-ref reg (r-idx v)) v))
+    (list-ref reg (r-idx v)) v))
 
 (define (constant? x)
   (or (integer? x) (boolean? x)))
@@ -98,13 +94,13 @@
       [else
         (exec
           (rest insts)
-          (append reg (list (instruction-interpret (first insts) (list->vector reg))))
+          (append reg (list (instruction-interpret (first insts) reg)))
           )
         ]
       ))
   (define reg
     (exec (program-instructions prog) inputs))
   (if (or (empty? reg) (= (length reg) (length inputs)))
-    empty
+    '()
     (first (reverse reg)))
   )

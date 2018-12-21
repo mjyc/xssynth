@@ -1,12 +1,9 @@
-#lang rosette
+#lang rosette/safe
 
 (require
+  (only-in racket for/list empty)
   "lang.rkt"
   rosette/lib/angelic
-  ; (rename-in
-  ;   (only-in rosette/query/debug define/debug)
-  ;   [define/debug define]
-  ;   )
   )
 
 (provide (all-defined-out))
